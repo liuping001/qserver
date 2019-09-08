@@ -1,3 +1,15 @@
+/**
+ * 可以这样使用
+ * class A : public S<A> {
+ *  ...
+ * }
+ * A::get()
+ * 或
+ * class A {
+ *  ...
+ * };
+ * S<A>::get();
+ */
 #pragma once
 
 template <class T>
@@ -9,7 +21,8 @@ public:
         static T instance;
         return   instance;
     }
-private:
+
+protected:
     S() {}
 public:
     S(S const&)               = delete;
