@@ -1,7 +1,5 @@
 
 #pragma once
-#define _XOPEN_SOURCE
-
 #include <ucontext.h>
 
 #include <unordered_map>

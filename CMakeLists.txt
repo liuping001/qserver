@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(qserver)
-
+SET(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 11)
 include_directories(src)
 set(SOURCE_FILES

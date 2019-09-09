@@ -4,7 +4,7 @@
 #include "time_mgr.h"
 
 class App {
-public:
+protected:
     virtual int OnInit() { return 0; }
     // 如果做了实际的工作就返回true, 空转返回false
     virtual bool OnTick() { return false; }
