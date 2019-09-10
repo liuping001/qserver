@@ -13,3 +13,7 @@ add_library(commlib ${SOURCE_FILES})
 
 add_executable(test_co src/test/test_co.cpp)
 target_link_libraries(test_co commlib)
+
+add_executable(test_timer src/test/test_timer.cpp)
+target_link_libraries(test_timer commlib)
+
