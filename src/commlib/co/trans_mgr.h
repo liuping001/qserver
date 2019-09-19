@@ -9,6 +9,8 @@
 #include "commlib/co/co_task.h"
 #include "commlib/singleton.h"
 #include "commlib/object_pool.h"
+#include "commlib/timer.h"
+#include "commlib/time_mgr.h"
 
 class TransMgr : public S<TransMgr> {
 public:
@@ -49,13 +51,34 @@ public:
         if (!co_task_.CoIdExist(co_id)) {
             return -1;
         }
+        // 从定时器中取消
+        auto iter_timer_id = co_id_timer_id_.find(co_id);
+        if (iter_timer_id != co_id_timer_id_.end()) {
+            timer_.CancelTimer(iter_timer_id->second);
+            co_id_timer_id_.erase(iter_timer_id);
+        }
         return co_task_.ResumeOne(co_id);
     }
 
-
+    /**
+     * @return 定时任务是否为空
+     */
+    bool TickTimeOutCo() {
+        timer_.DoTimeOutTask(time_mgr::now_ms());
+        return timer_.TimerSize() == 0;
+    }
+friend class Trans;
+private:
+    int Yield(const CoYield &yield, int32_t time_out_ms) {
+        co_id_timer_id_[yield.co_id_] = timer_.AddTimer(time_mgr::now_ms() + time_out_ms,
+                std::bind(&CoTask::ResumeOne, &co_task_, yield.co_id_, true));
+        return yield.Yield();
+    }
 private:
     std::unordered_map<int, ObjectPool<Trans>> trans_map_;
     CoTask co_task_;
+    Timer timer_;
+    std::unordered_map<uint32_t, Timer::TimerId> co_id_timer_id_;
 };
 
 template <class T, uint32_t cmd, uint16_t count = 1>

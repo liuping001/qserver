@@ -9,8 +9,8 @@ uint32_t CoTask::AddTack(task_type task) {
     return co_id;
 }
 
-int CoTask::ResumeOne(uint32_t co_id) {
-    return co_pool_.Resume(co_id);
+int CoTask::ResumeOne(uint32_t co_id, bool time_out) {
+    return co_pool_.Resume(co_id, time_out);
 }
 
 bool CoTask::CoIdExist(uint32_t co_id) {

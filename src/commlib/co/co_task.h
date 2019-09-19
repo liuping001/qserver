@@ -31,7 +31,7 @@ public:
     uint32_t AddTack(task_type task);
 
     // 通过co_id唤醒
-    int ResumeOne(uint32_t co_id);
+    int ResumeOne(uint32_t co_id, bool time_out = false);
 
     // 通过co_id唤醒
     bool CoIdExist(uint32_t co_id);

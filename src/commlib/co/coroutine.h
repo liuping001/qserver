@@ -14,6 +14,7 @@ struct Coroutine {
     ucontext_t context;
     uint32_t co_id = 0;
     task_type task;
+    bool resume_by_time_out_ = false;
     char stack[MAX_COROUTINE_STACK] = {}; // 私有栈
 };
 
@@ -23,7 +24,7 @@ class CoPool {
  public:
     int NewCoroutine(func_hander func, task_type task, void *arg);
     int Yield(uint32_t co_id);
-    int Resume(uint32_t co_id);
+    int Resume(uint32_t co_id, bool time_out = false);
     void FreeCoroutine(uint32_t co_id);
     const ActionCo & GetActionCo();
     Coroutine *FindCoId(uint32_t co_id);

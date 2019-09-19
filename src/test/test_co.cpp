@@ -16,7 +16,10 @@ public:
     TransA() {};
     void DoTask(const CoYield &co) final {
         std::cout << "yield before " << co.co_id_ <<"\n";
-        co.Yield();
+        auto ret = Yield(co, 1000);
+        if (ret != 0) {
+            std::cout << " by time out\n";
+        }
         std::cout << "yield after " << co.co_id_ <<"\n";
     }
 };
@@ -26,7 +29,10 @@ public:
     TransB () {};
     void DoTask(const CoYield &co) final {
         std::cout << "yield before " << co.co_id_ <<"\n";
-        co.Yield();
+        auto ret = Yield(co);
+        if (ret != 0) {
+            std::cout << " by time out\n";
+        }
         std::cout << "yield after " << co.co_id_ <<"\n";
     }
 };
@@ -36,16 +42,25 @@ public:
     TransC() {};
     void DoTask(const CoYield &co) final {
         std::cout << "yield before " << co.co_id_ <<"\n";
-        co.Yield();
+        auto ret = Yield(co);
+        if (ret != 0) {
+            std::cout << " by time out\n";
+        }
         std::cout << "yield after " << co.co_id_ <<"\n";
     }
 };
 
 int main() {
     TransMgr::get().OnCmd(CMD_TRANSA, 0); // co_id 1
-    TransMgr::get().OnCmd(CMD_TRANSA, 0); // co_id 2
-    TransMgr::get().OnCmd(CMD_TRANSB, 0); // co_id 3
-    TransMgr::get().OnCmd(CMD_TRANSB, 1);
-    TransMgr::get().OnCmd(CMD_TRANSC, 2);
+    TransMgr::get().OnCmd(CMD_TRANSB, 0); // co_id 2
+    TransMgr::get().OnCmd(CMD_TRANSC, 0); // co_id 3
+    TransMgr::get().OnCmd(CMD_TRANSB, 2);
     TransMgr::get().OnCmd(CMD_TRANSC, 3);
+    while (1) {
+        auto b = TransMgr::get().TickTimeOutCo();
+        if (b) {
+            return 0;
+        }
+        time_mgr::sleep(100);
+    }
 }

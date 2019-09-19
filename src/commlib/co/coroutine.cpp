@@ -30,13 +30,16 @@ int CoPool::Yield(uint32_t co_id){
         return -1;
 
     swapcontext(&co->context, &main);
-    return 0;
+    bool resume_time_out = co->resume_by_time_out_;
+    co->resume_by_time_out_ = false;
+    return resume_time_out ? -1 : 0;
 }
 
-int CoPool::Resume(uint32_t co_id){
+int CoPool::Resume(uint32_t co_id, bool time_out){
     Coroutine *co = FindCoId(co_id);
     if (co == nullptr)
         return -1;
+    co->resume_by_time_out_ = time_out;
     swapcontext(&main, &co->context);
     return 0;
 }

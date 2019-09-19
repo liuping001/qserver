@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.10)
 project(qserver)
 SET(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 11)
@@ -6,6 +6,7 @@ include_directories(src)
 set(SOURCE_FILES
     src/commlib/co/co_task.cpp
     src/commlib/co/coroutine.cpp
+    src/commlib/co/trans.cpp
     )
 
 add_library(commlib ${SOURCE_FILES})
