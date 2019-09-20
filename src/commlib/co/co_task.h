@@ -21,6 +21,15 @@ public:
     int Yield() const {
         return co_pool_.Yield(co_id_);
     }
+    CoMsg MoveMsg() {
+        auto co = co_pool_.FindCoId(co_id_);
+        if (co == nullptr) {
+            return CoMsg{nullptr, 0};
+        }
+        auto msg = co->co_msg;
+        co->co_msg.Clear();
+        return msg;
+    }
 };
 
 //using TaskFreeCall = std::function<void (int)>;
@@ -28,13 +37,25 @@ class CoTask {
 public:
     CoTask () {}
 
-    uint32_t AddTack(task_type task);
+    uint32_t AddTack(task_type task) {
+        auto co_id = co_pool_.NewCoroutine(&CoTask::Function, std::move(task), this);
+        return co_id;
+    }
 
     // 通过co_id唤醒
-    int ResumeOne(uint32_t co_id, bool time_out = false);
+    int ResumeOne(uint32_t co_id, bool time_out = false) {
+        return co_pool_.Resume(co_id, time_out);
+    }
+
+    int ResumeOneWithMsg(uint32_t co_id, const CoMsg &co_msg) {
+        return co_pool_.ResumeWithMsg(co_id, co_msg);
+    }
 
     // 通过co_id唤醒
-    bool CoIdExist(uint32_t co_id);
+    bool CoIdExist(uint32_t co_id) {
+        auto ret = co_pool_.FindCoId(co_id);
+        return ret != nullptr;
+    }
 
     // 返回本次resume的个数
     int ResumeAll();

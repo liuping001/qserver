@@ -4,20 +4,6 @@
 #include <vector>
 #include "co_task.h"
 
-uint32_t CoTask::AddTack(task_type task) {
-    auto co_id = co_pool_.NewCoroutine(&CoTask::Function, std::move(task), this);
-    return co_id;
-}
-
-int CoTask::ResumeOne(uint32_t co_id, bool time_out) {
-    return co_pool_.Resume(co_id, time_out);
-}
-
-bool CoTask::CoIdExist(uint32_t co_id) {
-    auto ret = co_pool_.FindCoId(co_id);
-    return ret != nullptr;
-}
-
 int CoTask::ResumeAll() {
     const auto &action_co = co_pool_.GetActionCo();
     if (action_co.empty()) {
@@ -28,7 +14,7 @@ int CoTask::ResumeAll() {
         co_id_list.push_back(co_id.first);
     }
     for (auto co_id : co_id_list) {
-        co_pool_.Resume(co_id);
+        co_pool_.Resume(co_id, false);
     }
     return co_id_list.size();
 }
@@ -36,8 +22,6 @@ int CoTask::ResumeAll() {
 void CoTask::Function(void *co_pool, void *co, void *co_task) {
     auto &co_pool_ = *static_cast<CoPool*>(co_pool);
     auto &co_ = *static_cast<Coroutine*>(co);
-    auto co_task_ = static_cast<CoTask*>(co_task);
-
     CoYield co_yield(co_pool_, co_.co_id);
     co_.task(co_yield);
 }

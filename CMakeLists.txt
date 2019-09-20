@@ -6,7 +6,7 @@ include_directories(src)
 set(SOURCE_FILES
     src/commlib/co/co_task.cpp
     src/commlib/co/coroutine.cpp
-    src/commlib/co/trans.cpp
+    src/commlib/trans/trans.cpp
     )
 
 add_library(commlib ${SOURCE_FILES})
