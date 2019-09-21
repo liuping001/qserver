@@ -78,7 +78,7 @@ private:
         return yield.Yield();
     }
 private:
-    std::unordered_map<int, ObjectPool<Trans>> trans_map_;
+    std::unordered_map<uint32_t, ObjectPool<Trans>> trans_map_;
     CoTask co_task_;
     Timer timer_;
     std::unordered_map<uint32_t, Timer::TimerId> co_id_timer_id_;
