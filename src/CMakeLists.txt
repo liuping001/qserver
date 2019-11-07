@@ -8,4 +8,5 @@ add_subdirectory(commlib)
 
 set (AMQP-CPP_LINUX_TCP ON CACHE BOOL "x")
 add_subdirectory(third/AMQP-CPP)
+add_subdirectory(third)
 add_subdirectory(test)

@@ -1,0 +1,14 @@
+add_library(hiredis-vip
+        hiredis-vip/adlist.c
+        hiredis-vip/async.c
+        hiredis-vip/command.c
+        hiredis-vip/crc16.c
+        hiredis-vip/dict.c
+        hiredis-vip/hiarray.c
+        hiredis-vip/hircluster.c
+        hiredis-vip/hiredis.c
+        hiredis-vip/hiutil.c
+        hiredis-vip/net.c
+        hiredis-vip/read.c
+        hiredis-vip/sds.c
+        )
