@@ -21,14 +21,12 @@ public:
     int Yield() const {
         return co_pool_.Yield(co_id_);
     }
-    CoMsg MoveMsg() {
+    CoMsg GetMsg() const {
         auto co = co_pool_.FindCoId(co_id_);
         if (co == nullptr) {
-            return CoMsg{nullptr, 0};
+            return nullptr;
         }
-        auto msg = co->co_msg;
-        co->co_msg.Clear();
-        return msg;
+        return co->co_msg;
     }
 };
 
@@ -42,12 +40,17 @@ public:
         return co_id;
     }
 
+    int DoTack(task_type task) {
+        auto co_id = co_pool_.NewCoroutine(&CoTask::Function, std::move(task), this);
+        return co_pool_.Resume(co_id, false);
+    }
+
     // 通过co_id唤醒
     int ResumeOne(uint32_t co_id, bool time_out = false) {
         return co_pool_.Resume(co_id, time_out);
     }
 
-    int ResumeOneWithMsg(uint32_t co_id, const CoMsg &co_msg) {
+    int ResumeOneWithMsg(uint32_t co_id, CoMsg co_msg) {
         return co_pool_.ResumeWithMsg(co_id, co_msg);
     }
 

@@ -44,7 +44,7 @@ int CoPool::Resume(uint32_t co_id, bool time_out){
     return 0;
 }
 
-int CoPool::ResumeWithMsg(uint32_t co_id, const CoMsg &co_msg) {
+int CoPool::ResumeWithMsg(uint32_t co_id, CoMsg co_msg) {
     Coroutine *co = FindCoId(co_id);
     if (co == nullptr)
         return -1;

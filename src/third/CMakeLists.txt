@@ -1,3 +1,4 @@
+include_directories(./hiredis-vip)
 add_library(hiredis-vip
         hiredis-vip/adlist.c
         hiredis-vip/async.c

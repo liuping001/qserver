@@ -49,7 +49,7 @@ public:
             }
             auto trans = trans_pool.get_shared();
             auto id = co_task_.AddTack([trans](const CoYield &co) { trans->DoTask(co); });
-            return co_task_.ResumeOneWithMsg(id, CoMsg{msg.Data(), msg.Size()});
+            return co_task_.ResumeOneWithMsg(id, const_cast<TransMsg *>(&msg));
         }
         if (!co_task_.CoIdExist(co_id)) {
             return -1;
@@ -60,7 +60,7 @@ public:
             timer_.CancelTimer(iter_timer_id->second);
             co_id_timer_id_.erase(iter_timer_id);
         }
-        return co_task_.ResumeOneWithMsg(co_id, CoMsg{msg.Data(), msg.Size()});
+        return co_task_.ResumeOneWithMsg(co_id, const_cast<TransMsg *>(&msg));
     }
 
     /**
