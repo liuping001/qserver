@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <exception>
 
 namespace Redis {
     static void GetCallback(redisAsyncContext *c, void *r, void *privdata);
@@ -63,6 +64,7 @@ namespace Redis {
         void SetValue(long long &value) {
             value = reply_->integer;
         }
+
         template <class T>
         void SetValue(std::vector<T> &value) {
             if (reply_->type != REDIS_REPLY_ARRAY) {
@@ -74,59 +76,69 @@ namespace Redis {
                 reader.SetValue(value.back());
             }
         }
-
     };
 
-    class RedisCmd {
-        struct Ret {
-            int code = 0;
-            std::string errstr;
-            void Clear() {
-                code = 0;
-                errstr.clear();
+    namespace writer {
+        template <class T>
+        void Append(T &&t, std::string &cmd) {
+            if (!cmd.empty()) {
+                cmd.append(" ");
             }
-        };
+            cmd.append(std::forward<T>(t));
+        }
+
+        template <class H, class ...T>
+        void Append(H &&h, T&&... t, std::string &cmd) {
+            Append(std::forward<T>(t)..., std::forward<H>(h), cmd);
+        }
+        template <class ...T>
+        std::string Cmd(T &&...t) {
+            std::string cmd;
+            Append(std::forward<T>(t)..., cmd);
+            return cmd;
+        }
+    };
+
+
+    class RedisCmd {
 
         CoTask &co_task_;
         redisAsyncContext *context_;
         const CoYield &yield_;
 
-        Ret Yield(redisReply * &reply) {
-            Ret error;
+        redisReply * Yield() {
             auto ret = yield_.Yield();
             if (ret != 0) {
-                error.code = 1;
-                return error;
+                throw std::logic_error("yield failed");
             }
             auto msg = yield_.GetMsg();
             if (msg == nullptr) {
-                error.code = -1;
-                return error;
+                throw std::logic_error("reply null");
             }
 
             auto redis_reply = static_cast<redisReply *>(msg);
-            if (reply->type == REDIS_REPLY_ERROR) {
-                error.errstr.assign(reply->str, reply->len);
-                error.code = -1;
-                return error;
+            if (redis_reply->type == REDIS_REPLY_ERROR) {
+                throw std::logic_error(std::string(redis_reply->str, redis_reply->len));
             }
-            reply = redis_reply;
-            return error;
+            return redis_reply;
         }
 
-        template <class ...T>
-        Ret InnerCmd(const std::string &cmd, T&... value) {
+        template <class T>
+        T InnerCmd(const std::string &cmd) {
             std::cout << "cmd :" <<cmd <<"\n";
             CoInfo co_info{co_task_, yield_};
             redisAsyncCommand(context_, GetCallback, &co_info, cmd.c_str());
-            redisReply * reply;
-            auto ret = Yield(reply);
-            if (ret.code != 0) {
-                return ret;
-            }
+            auto reply = Yield();
             RedisReplyReader reader(reply);
-            reader.SetValue(value...);
-            return ret;
+            T t;
+            reader.SetValue(t);
+            return t;
+        }
+        void InnerCmd(const std::string &cmd) {
+            std::cout << "cmd :" <<cmd <<"\n";
+            CoInfo co_info{co_task_, yield_};
+            redisAsyncCommand(context_, GetCallback, &co_info, cmd.c_str());
+            Yield();
         }
     public:
 
@@ -135,48 +147,17 @@ namespace Redis {
                   context_(context),
                   yield_(yield) {}
 
-        Ret Set(const std::string &key, const std::string &value) {
-            std::string cmd = "set ";
-            cmd.append(key);
-            cmd.append(" ").append(value);
-            std::cout << "cmd:" << cmd << "\n";
-            CoInfo co_info{co_task_, yield_};
-            redisAsyncCommand(context_, GetCallback, &co_info, cmd.c_str());
-            redisReply * reply;
-            return Yield(reply);
+        void Set(const std::string &key, const std::string &value) {
+            return InnerCmd(writer::Cmd("set", key, value));
         }
 
-        Ret Get(const std::string &key, std::string &value) {
-            return InnerCmd("get " + key, value);
+        std::string Get(const std::string &key) {
+            return InnerCmd<std::string>(writer::Cmd("get", key));
         }
 
-        Ret MGet(const std::vector<std::string> &keys, std::vector<std::string> &value) {
-            std::string cmd = "mget";
-            for (auto &item : keys) {
-                cmd.append(" ");
-                cmd.append(item);
-            }
-            return InnerCmd(cmd, value);
-        }
-
-        Ret Scan(long long &cursor, std::vector<std::string> &keys) {
-            std::string cmd = "scan ";
-            cmd.append(std::to_string(cursor));
-
-            CoInfo co_info{co_task_, yield_};
-            redisAsyncCommand(context_, GetCallback, &co_info, cmd.c_str());
-            redisReply * reply;
-            auto ret = Yield(reply);
-            if (ret.code != 0) {
-                return ret;
-            }
-            std::cout << "scan  ----:" << reply->element[0]->type << "\n";
-            RedisReplyReader reader1(reply->element[0]);
-            reader1.SetValue(cursor);
-            RedisReplyReader reader2(reply->element[1]);
-            reader2.SetValue(keys);
-            return ret;
-        }
+//        std::vector<std::string> MGet(const std::vector<std::string> &keys) {
+//            return InnerCmd<std::vector<std::string>>(writer::Cmd("mget", keys));
+//        }
     };
 
     static void GetCallback(redisAsyncContext *c, void *r, void *privdata) {
@@ -218,25 +199,13 @@ int main (int argc, char **argv) {
 
     co_task_.DoTack([&redis_client](const CoYield &yield) {
         RedisCmd cmd(redis_client.GetCoTask(), redis_client.Context(),  yield);
-        std::cout << cmd.Set("key1", "value1").code << std::endl;
-        std::cout << cmd.Set("key2", "value2").code << std::endl;
+        cmd.Set("key1", "value1");
+        cmd.Set("key2", "value2");
 
-        std::string value1;
-        std::cout << cmd.Get("key1", value1).code << std::endl;
-        std::cout << "value1:" << value1 << std::endl;
-        std::string value3;
-        std::cout << cmd.Get("key3", value3).code << std::endl;
-        std::cout << "value3:" << value3 << std::endl;
+        std::cout << "value1:" << cmd.Get("key1")<< std::endl;
+        std::cout << "value3:" << cmd.Get("key3") << std::endl;
 
-
-        std::vector<std::string> mvalue;
-        std::cout << cmd.MGet({"key1", "key2", "key3"}, mvalue).code << std::endl;;
-        Debug(mvalue);
-
-        long long cursor = 0;
-        std::vector<std::string> keys;
-        std::cout << cmd.Scan(cursor, keys).code;
-        Debug(keys);
+//        Debug(cmd.MGet({"key1", "key2", "key3"}));
 
         redisAsyncDisconnect(redis_client.Context());
     });
