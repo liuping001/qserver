@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <sstream>
 
 namespace Redis {
     static void GetCallback(redisAsyncContext *c, void *r, void *privdata);
@@ -80,21 +81,26 @@ namespace Redis {
 
     namespace writer {
         template <class T>
-        void Append(T &&t, std::string &cmd) {
-            if (!cmd.empty()) {
-                cmd.append(" ");
+        void Append(std::vector<std::string> &cmd, T &&t) {
+            cmd.push_back(std::forward<T>(t));
+        }
+
+        template <class T>
+        void Append(std::vector<std::string> &cmd, const std::vector<T> &t) {
+            for (const auto &item : t) {
+                Append(cmd, item);
             }
-            cmd.append(std::forward<T>(t));
         }
 
         template <class H, class ...T>
-        void Append(H &&h, T&&... t, std::string &cmd) {
-            Append(std::forward<T>(t)..., std::forward<H>(h), cmd);
+        void Append(std::vector<std::string> &cmd, H &&h, T&&... t) {
+            cmd.push_back(std::forward<H>(h));
+            Append(cmd, std::forward<T>(t)...);
         }
         template <class ...T>
-        std::string Cmd(T &&...t) {
-            std::string cmd;
-            Append(std::forward<T>(t)..., cmd);
+        std::vector<std::string> Cmd(T &&...t) {
+            std::vector<std::string> cmd;
+            Append(cmd, std::forward<T>(t)...);
             return cmd;
         }
     };
@@ -123,21 +129,34 @@ namespace Redis {
             return redis_reply;
         }
 
-        template <class T>
-        T InnerCmd(const std::string &cmd) {
-            std::cout << "cmd :" <<cmd <<"\n";
+        template <class T, class ...Args>
+        T InnerCmd(Args &&...args) {
+            auto cmd = writer::Cmd(std::forward<Args>(args)...);
+            std::vector<const char *> argvs(cmd.size());
+            std::vector<size_t> argvlens(cmd.size());
+            for (uint32_t i = 0; i < cmd.size(); ++i) {
+                argvs[i] = cmd[i].c_str();
+                argvlens[i] = cmd[i].length();
+            }
             CoInfo co_info{co_task_, yield_};
-            redisAsyncCommand(context_, GetCallback, &co_info, cmd.c_str());
+            redisAsyncCommandArgv(context_, GetCallback, &co_info, argvs.size(), &argvs[0], &argvlens[0]);
             auto reply = Yield();
             RedisReplyReader reader(reply);
             T t;
             reader.SetValue(t);
             return t;
         }
-        void InnerCmd(const std::string &cmd) {
-            std::cout << "cmd :" <<cmd <<"\n";
+        template <class ...Args>
+        void NoRetInnerCmd(Args &&...args) {
+            auto cmd = writer::Cmd(std::forward<Args>(args)...);
+            std::vector<const char *> argvs(cmd.size());
+            std::vector<size_t> argvlens(cmd.size());
+            for (uint32_t i = 0; i < cmd.size(); ++i) {
+                argvs[i] = cmd[i].c_str();
+                argvlens[i] = cmd[i].length();
+            }
             CoInfo co_info{co_task_, yield_};
-            redisAsyncCommand(context_, GetCallback, &co_info, cmd.c_str());
+            redisAsyncCommandArgv(context_, GetCallback, &co_info, argvs.size(), &argvs[0], &argvlens[0]);
             Yield();
         }
     public:
@@ -148,16 +167,19 @@ namespace Redis {
                   yield_(yield) {}
 
         void Set(const std::string &key, const std::string &value) {
-            return InnerCmd(writer::Cmd("set", key, value));
+            return NoRetInnerCmd("set", key, value);
         }
 
         std::string Get(const std::string &key) {
-            return InnerCmd<std::string>(writer::Cmd("get", key));
+            return InnerCmd<std::string>("get", key);
         }
 
-//        std::vector<std::string> MGet(const std::vector<std::string> &keys) {
-//            return InnerCmd<std::vector<std::string>>(writer::Cmd("mget", keys));
-//        }
+        std::vector<std::string> MGet(const std::vector<std::string> &keys) {
+            return InnerCmd<std::vector<std::string>>("mget", keys);
+        }
+        long long Incr(const std::string &key) {
+            return InnerCmd<long long>("incr", key);
+        }
     };
 
     static void GetCallback(redisAsyncContext *c, void *r, void *privdata) {
@@ -201,11 +223,13 @@ int main (int argc, char **argv) {
         RedisCmd cmd(redis_client.GetCoTask(), redis_client.Context(),  yield);
         cmd.Set("key1", "value1");
         cmd.Set("key2", "value2");
-
+        char b[6]={0, 1, 2, 122, 9};
+        cmd.Set("key3", std::string(b, sizeof(b)));
         std::cout << "value1:" << cmd.Get("key1")<< std::endl;
-        std::cout << "value3:" << cmd.Get("key3") << std::endl;
+        std::cout << "value2:" << cmd.Get("key2")<< std::endl;
+        std::cout << "value3:" << cmd.Get("key3").size() << std::endl;
 
-//        Debug(cmd.MGet({"key1", "key2", "key3"}));
+        Debug(cmd.MGet({"key1", "key2"}));
 
         redisAsyncDisconnect(redis_client.Context());
     });
