@@ -28,41 +28,43 @@ void ConnectCallback(const redisAsyncContext *c, int status);
 void DisconnectCallback(const redisAsyncContext *c, int status);
 
 class RedisClient {
-    struct event_base &base_;
-    CoTask &co_task_;
-    redisAsyncContext * context_ = nullptr;
-public:
-    RedisClient(struct event_base &base, CoTask &co_task) : base_(base), co_task_(co_task) {}
-    redisAsyncContext *Context() { return context_; }
-    CoTask & GetCoTask() { return co_task_; }
-    int Init(std::string ip, int port);
+  struct event_base &base_;
+  CoTask &co_task_;
+  redisAsyncContext *context_ = nullptr;
+ public:
+  RedisClient(struct event_base &base, CoTask &co_task) : base_(base), co_task_(co_task) {}
+  redisAsyncContext *Context() { return context_; }
+  CoTask &GetCoTask() { return co_task_; }
+  int Init(std::string ip, int port);
 };
 
-
 class RedisCmd {
-    CoTask &co_task_;
-    redisAsyncContext *context_;
-    const CoYield &yield_;
+  CoTask &co_task_;
+  redisAsyncContext *context_;
+  const CoYield &yield_;
 
-    redisReply * Yield();
+  redisReply *Yield();
 
-    template <class T, class ...Args> T InnerCmd(Args &&...args);
-    template <class ...Args> void NoRetInnerCmd(Args &&...args);
-public:
+  template<class T, class ...Args>
+  T InnerCmd(Args &&...args);
+  template<class ...Args>
+  void NoRetInnerCmd(Args &&...args);
+ public:
 
-    RedisCmd(CoTask &co_task, redisAsyncContext *context, const CoYield &yield)
-            : co_task_(co_task),
-              context_(context),
-              yield_(yield) {}
+  RedisCmd(CoTask &co_task, redisAsyncContext *context, const CoYield &yield)
+      : co_task_(co_task),
+        context_(context),
+        yield_(yield) {}
 
-    void Set(const std::string &key, const std::string &value);
-    std::vector<std::string> MGet(const std::vector<std::string> &keys);
-    long long Incr(const std::string &key);
-    std::string Get(const std::string &key);
-    template <class T> T Get(const std::string &key) {
-        auto value = Get(key);
-        return type::string_to<T>(value);
-    }
+  void Set(const std::string &key, const std::string &value);
+  std::vector<std::string> MGet(const std::vector<std::string> &keys);
+  long long Incr(const std::string &key);
+  std::string Get(const std::string &key);
+  template<class T>
+  T Get(const std::string &key) {
+    auto value = Get(key);
+    return type::string_to<T>(value);
+  }
 };
 
 }

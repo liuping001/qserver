@@ -1,23 +1,48 @@
 #pragma once
 struct Tester {
-    const char * file_;
-    int line_;
-    bool ok_ = true;
-    std::string opt;
+  const char *file_;
+  int line_;
+  bool ok_ = true;
+  std::string opt;
 
-    Tester(const char * file, int line) : file_(file), line_(line) {};
-    ~Tester() {
-        if (ok_) { return; }
-        std::cout << file_ << ":" << line_ << " failed [" << opt << "] " << std::flush;
-        exit(1);
-    }
-    template <class X> inline void ok(const X &x) { ok_ = x ? true : false; }
-    template <class X, class Y> inline void equal_to     (const X & x, const Y & y) { ok_ = x == y; opt += "=="; }
-    template <class X, class Y> inline void not_equal_to (const X & x, const Y & y) { ok_ = x != y; opt += "!="; }
-    template <class X, class Y> inline void greater_equal(const X & x, const Y & y) { ok_ = x >= y; opt += ">="; }
-    template <class X, class Y> inline void greater      (const X & x, const Y & y) { ok_ = x > y;  opt += ">"; }
-    template <class X, class Y> inline void less_equal   (const X & x, const Y & y) { ok_ = x <= y; opt += "<="; }
-    template <class X, class Y> inline void less         (const X & x, const Y & y) { ok_ = x < y;  opt += "<"; }
+  Tester(const char *file, int line) : file_(file), line_(line) {};
+  ~Tester() {
+    if (ok_) { return; }
+    std::cout << file_ << ":" << line_ << " failed [" << opt << "] " << std::flush;
+    exit(1);
+  }
+  template<class X>
+  inline void ok(const X &x) { ok_ = x ? true : false; }
+  template<class X, class Y>
+  inline void equal_to(const X &x, const Y &y) {
+    ok_ = x == y;
+    opt += "==";
+  }
+  template<class X, class Y>
+  inline void not_equal_to(const X &x, const Y &y) {
+    ok_ = x != y;
+    opt += "!=";
+  }
+  template<class X, class Y>
+  inline void greater_equal(const X &x, const Y &y) {
+    ok_ = x >= y;
+    opt += ">=";
+  }
+  template<class X, class Y>
+  inline void greater(const X &x, const Y &y) {
+    ok_ = x > y;
+    opt += ">";
+  }
+  template<class X, class Y>
+  inline void less_equal(const X &x, const Y &y) {
+    ok_ = x <= y;
+    opt += "<=";
+  }
+  template<class X, class Y>
+  inline void less(const X &x, const Y &y) {
+    ok_ = x < y;
+    opt += "<";
+  }
 
 };
 

@@ -14,85 +14,85 @@
 #include "commlib/trans/trans_msg.h"
 
 class TransMgr : public S<TransMgr> {
-public:
-    /**
-     * 注册事务类T
-     * @tparam T 注册的类
-     * @param cmd 注册的key
-     * @param count 注册T事务 的数量
-     * @return
-     */
-    template <class T>
-    bool RegisterCmd(uint32_t cmd, int count) {
-        if (trans_map_.find(cmd) != trans_map_.end()) {
-            return false;
-        }
-        for (int i = 0; i < count; i++) {
-            trans_map_[cmd].add(std::unique_ptr<Trans>((Trans *) new T()));
-        }
-        return true;
+ public:
+  /**
+   * 注册事务类T
+   * @tparam T 注册的类
+   * @param cmd 注册的key
+   * @param count 注册T事务 的数量
+   * @return
+   */
+  template<class T>
+  bool RegisterCmd(uint32_t cmd, int count) {
+    if (trans_map_.find(cmd) != trans_map_.end()) {
+      return false;
     }
+    for (int i = 0; i < count; i++) {
+      trans_map_[cmd].add(std::unique_ptr<Trans>((Trans *) new T()));
+    }
+    return true;
+  }
 
-    /**
-     * 唤醒co_id对应的事务。如果co_id == 0则为cmd创建一个事务
-     * @param cmd
-     * @param co_id
-     * @return
-     */
-    int OnMsg(const TransMsg &msg) {
-        auto cmd = msg.Cmd();
-        auto co_id = msg.CoId();
-        if (co_id == 0) { // init
-            auto &trans_pool = trans_map_[cmd];
-            if (trans_pool.empty()) {
-                return -1;
-            }
-            auto trans = trans_pool.get_shared();
-            auto id = co_task_.AddTack([trans](const CoYield &co) { trans->DoTask(co); });
-            return co_task_.ResumeOneWithMsg(id, const_cast<TransMsg *>(&msg));
-        }
-        if (!co_task_.CoIdExist(co_id)) {
-            return -1;
-        }
-        // 从定时器中取消
-        auto iter_timer_id = co_id_timer_id_.find(co_id);
-        if (iter_timer_id != co_id_timer_id_.end()) {
-            timer_.CancelTimer(iter_timer_id->second);
-            co_id_timer_id_.erase(iter_timer_id);
-        }
-        return co_task_.ResumeOneWithMsg(co_id, const_cast<TransMsg *>(&msg));
+  /**
+   * 唤醒co_id对应的事务。如果co_id == 0则为cmd创建一个事务
+   * @param cmd
+   * @param co_id
+   * @return
+   */
+  int OnMsg(const TransMsg &msg) {
+    auto cmd = msg.Cmd();
+    auto co_id = msg.CoId();
+    if (co_id == 0) { // init
+      auto &trans_pool = trans_map_[cmd];
+      if (trans_pool.empty()) {
+        return -1;
+      }
+      auto trans = trans_pool.get_shared();
+      auto id = co_task_.AddTack([trans](const CoYield &co) { trans->DoTask(co); });
+      return co_task_.ResumeOneWithMsg(id, const_cast<TransMsg *>(&msg));
     }
+    if (!co_task_.CoIdExist(co_id)) {
+      return -1;
+    }
+    // 从定时器中取消
+    auto iter_timer_id = co_id_timer_id_.find(co_id);
+    if (iter_timer_id != co_id_timer_id_.end()) {
+      timer_.CancelTimer(iter_timer_id->second);
+      co_id_timer_id_.erase(iter_timer_id);
+    }
+    return co_task_.ResumeOneWithMsg(co_id, const_cast<TransMsg *>(&msg));
+  }
 
-    /**
-     * @return 定时任务是否为空
-     */
-    bool TickTimeOutCo() {
-        timer_.DoTimeOutTask(time_mgr::now_ms());
-        return timer_.TimerSize() == 0;
-    }
-friend class Trans;
-private:
-    int Yield(const CoYield &yield, int32_t time_out_ms) {
-        co_id_timer_id_[yield.co_id_] = timer_.AddTimer(time_mgr::now_ms() + time_out_ms,
-                std::bind(&CoTask::ResumeOne, &co_task_, yield.co_id_, true));
-        return yield.Yield();
-    }
-private:
-    std::unordered_map<uint32_t, ObjectPool<Trans>> trans_map_;
-    CoTask co_task_;
-    Timer timer_;
-    std::unordered_map<uint32_t, Timer::TimerId> co_id_timer_id_;
+  /**
+   * @return 定时任务是否为空
+   */
+  bool TickTimeOutCo() {
+    timer_.DoTimeOutTask(time_mgr::now_ms());
+    return timer_.TimerSize() == 0;
+  }
+  friend class Trans;
+ private:
+  int Yield(const CoYield &yield, int32_t time_out_ms) {
+    co_id_timer_id_[yield.co_id_] = timer_.AddTimer(time_mgr::now_ms() + time_out_ms,
+                                                    std::bind(&CoTask::ResumeOne, &co_task_, yield.co_id_, true));
+    return yield.Yield();
+  }
+ private:
+  std::unordered_map<uint32_t, ObjectPool<Trans>> trans_map_;
+  CoTask co_task_;
+  Timer timer_;
+  std::unordered_map<uint32_t, Timer::TimerId> co_id_timer_id_;
 };
 
-template <class T, uint32_t cmd, uint16_t count = 1>
+template<class T, uint32_t cmd, uint16_t count = 1>
 class RegisterTrans : public Trans {
-public:
-    RegisterTrans() : Trans() {
-        reg;
-    }
-private:
-    static bool reg;
+ public:
+  RegisterTrans() : Trans() {
+    reg;
+  }
+ private:
+  static bool reg;
 };
 
-template <class T, uint32_t cmd, uint16_t count>
+template<class T, uint32_t cmd, uint16_t count>
 bool RegisterTrans<T, cmd, count>::reg = TransMgr::get().RegisterCmd<T>(cmd, count);

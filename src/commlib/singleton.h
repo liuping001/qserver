@@ -12,19 +12,17 @@
  */
 #pragma once
 
-template <class T>
-class S
-{
-public:
-    static T& get()
-    {
-        static T instance;
-        return   instance;
-    }
+template<class T>
+class S {
+ public:
+  static T &get() {
+    static T instance;
+    return instance;
+  }
 
-protected:
-    S() {}
-public:
-    S(S const&)               = delete;
-    void operator=(S const&)  = delete;
+ protected:
+  S() {}
+ public:
+  S(S const &) = delete;
+  void operator=(S const &) = delete;
 };
