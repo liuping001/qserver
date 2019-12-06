@@ -10,3 +10,5 @@ target_link_libraries(test_mq amqpcpp boost_system pthread)
 
 add_executable(async_redis test_async_redis.cpp)
 target_link_libraries(async_redis hiredis-vip event commlib)
+
+add_executable(toml_cpp toml_make_cpp.cpp)
