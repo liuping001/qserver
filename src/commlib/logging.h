@@ -1,5 +1,5 @@
 //
-// Created by mico on 2019/12/13.
+// Created by liuping on 2019/12/13.
 //
 
 #pragma once
@@ -8,6 +8,7 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/daily_file_sink.h"
 
+#include "spdlog/async.h"
 
 namespace logger_mgr {
 
@@ -33,30 +34,17 @@ struct Config {
   }
 };
 
-void Init(const Config &config) {
-  auto log_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(config.log_file, config.rotating_size, config.max_files);
-  log_sink->set_level(config.level);
-  log_sink->set_pattern(config.fmt);
-  auto log_logger = std::make_shared<spdlog::logger>(sink_log, log_sink);
-  spdlog::register_logger(log_logger);
+struct ConfigAsync : public Config {
+  ConfigAsync() : Config() {}
+  size_t queue_size = 8192;
+  size_t n_threads = 1;
+};
 
-  if (config.data_file.empty()) {
-    return;
-  }
-  auto data_sink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(config.data_file, 0, 0);
-  data_sink->set_level(spdlog::level::info);
-  data_sink->set_pattern(config.fmt);
-  std::vector<spdlog::sink_ptr> sink_list{log_sink, data_sink};
-  auto data_logger = std::make_shared<spdlog::logger>(sink_data, sink_list.begin(), sink_list.end());
-  spdlog::register_logger(data_logger);
-}
+void Init(const std::string &log_file, const std::string &data_file = "");
+void Init(const Config &config);
 
-void Init(const std::string &log_file, const std::string &data_file = "") {
-  Config config;
-  config.log_file = log_file;
-  config.data_file = data_file;
-  Init(config);
-}
+void InitAsync(const std::string &log_file, const std::string &data_file = "");
+void InitAsync(const ConfigAsync &config);
 
 };
 

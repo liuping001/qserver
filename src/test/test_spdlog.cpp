@@ -7,7 +7,7 @@
 #include "commlib/logging.h"
 
 int main() {
-  logger_mgr::Init("log/svr.log", "log/data.log");
+  logger_mgr::InitAsync("log/svr.log", "log/data.log");
 
   std::thread a([](){
     for (int i = 0; i < 10000; i ++) {

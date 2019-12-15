@@ -3,6 +3,7 @@ set(SOURCE_FILES
         co/coroutine.cpp
         redis_client.cpp
         trans/trans.cpp
+        logging.cpp
         )
 
 add_library(commlib ${SOURCE_FILES})
