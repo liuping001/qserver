@@ -40,10 +40,12 @@ struct ConfigAsync : public Config {
   size_t n_threads = 1;
 };
 
-void Init(const std::string &log_file, const std::string &data_file = "");
+void Init(const std::string &log_file, const std::string &data_file);
+void Init(const std::string &log_file); // no data log
 void Init(const Config &config);
 
-void InitAsync(const std::string &log_file, const std::string &data_file = "");
+void InitAsync(const std::string &log_file, const std::string &data_file);
+void InitAsync(const std::string &log_file); // no data log
 void InitAsync(const ConfigAsync &config);
 
 };

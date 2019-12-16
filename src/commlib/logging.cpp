@@ -38,6 +38,12 @@ void Init(const std::string &log_file, const std::string &data_file) {
   InitInner(config);
 }
 
+void Init(const std::string &log_file) {
+  Config config;
+  config.log_file = log_file;
+  InitInner(config);
+}
+
 void Init(const Config &config) {
   InitInner(config);
 }
@@ -46,6 +52,12 @@ void InitAsync(const std::string &log_file, const std::string &data_file) {
   ConfigAsync config;
   config.log_file = log_file;
   config.data_file = data_file;
+  InitAsync(config);
+}
+
+void InitAsync(const std::string &log_file) {
+  ConfigAsync config;
+  config.log_file = log_file;
   InitAsync(config);
 }
 
