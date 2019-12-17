@@ -7,3 +7,6 @@
 [submodule "src/third/hiredis"]
 	path = src/third/hiredis
 	url = https://github.com/redis/hiredis.git
+[submodule "src/third/redis-plus-plus"]
+	path = src/third/redis-plus-plus
+	url = https://github.com/sewenew/redis-plus-plus.git
