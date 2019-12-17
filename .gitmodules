@@ -4,3 +4,6 @@
 [submodule "src/third/hiredis-vip"]
 	path = src/third/hiredis-vip
 	url = https://github.com/vipshop/hiredis-vip.git
+[submodule "src/third/hiredis"]
+	path = src/third/hiredis
+	url = https://github.com/redis/hiredis.git
