@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(./third)
+include_directories(./third/redis-plus-plus/src/sw)
 add_subdirectory(commlib)
 
 set (AMQP-CPP_LINUX_TCP ON CACHE BOOL "x")

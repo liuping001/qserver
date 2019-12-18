@@ -15,3 +15,6 @@ target_link_libraries(async_redis hiredis-vip event commlib)
 
 add_executable(spdlog test_spdlog.cpp)
 target_link_libraries(spdlog pthread commlib)
+
+add_executable(test_redis++ test_redis++.cpp)
+target_link_libraries(test_redis++ redis++)
