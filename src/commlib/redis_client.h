@@ -51,9 +51,9 @@ class RedisCmd {
   void NoRetInnerCmd(Args &&...args);
  public:
 
-  RedisCmd(CoTask &co_task, redisAsyncContext *context, const CoYield &yield)
-      : co_task_(co_task),
-        context_(context),
+  RedisCmd(RedisClient &client, const CoYield &yield)
+      : co_task_(client.GetCoTask()),
+        context_(client.Context()),
         yield_(yield) {}
 
   void Set(const std::string &key, const std::string &value);
