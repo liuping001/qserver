@@ -50,18 +50,68 @@ int RedisClient::Init(std::string ip, int port) {
   return 0;
 }
 
+class RedisEx : std::exception {
+ public:
+  RedisEx(const std::string &what) : what_(what) { }
+  const char* what() const final () { return what_.c_str(); }
+ private:
+  std::string what_;
+};
+
+struct Status {
+  enum STATUS {
+    NONE,
+    OK,
+  };
+  bool Ok() { return status == OK; }
+  void SetOk() { status = OK; }
+  STATUS status = OK;
+};
+
+bool is_array(redisReply *reply) { return reply->type == REDIS_REPLY_ARRAY; }
+bool is_string(redisReply * reply) { return reply->type == REDIS_REPLY_STRING; }
+bool is_integer(redisReply * reply) { return reply->type == REDIS_REPLY_INTEGER; }
+bool is_status(redisReply * reply) { return reply->type == REDIS_REPLY_STATUS; }
+bool is_nil(redisReply * reply) { return reply->type == REDIS_REPLY_NIL; }
+
 class RedisReplyReader {
  private:
   redisReply *reply_;
  public:
   RedisReplyReader(redisReply *reply) : reply_(reply) {}
-  void ReadValue(std::string &value) { value.assign(reply_->str, reply_->len); }
-  void ReadValue(long long &value) { value = reply_->integer; }
+  void ReadValue(std::string &value) {
+    if (!is_string(reply_)) {
+      throw RedisEx("not string type");
+    }
+    value.assign(reply_->str, reply_->len);
+  }
+  void ReadValue(long long &value) {
+    if (!is_integer(reply_)) {
+      throw RedisEx("not integer type");
+    }
+    value = reply_->integer;
+  }
+  void ReadValue(bool &value) {
+    if (!is_integer(reply_)) {
+      throw RedisEx("not integer type");
+    }
+    value = reply_->integer;
+  }
+
+  void ReadValue(Status &value) {
+    if (!is_status(reply_)) {
+      throw RedisEx("not status type");
+    }
+    std::string str(reply_->str, reply_->len);
+    if (str == "OK") {
+      value.SetOk();
+    }
+  }
 
   template<class T>
   void ReadValue(std::vector<T> &value) {
-    if (reply_->type != REDIS_REPLY_ARRAY) {
-      return;
+    if (!is_array(reply_)) {
+      throw RedisEx("not array type");
     }
     for (size_t i = 0; i < reply_->elements; i++) {
       value.emplace_back();
@@ -74,7 +124,7 @@ class RedisReplyReader {
 namespace writer {
 template<class T>
 void Append(std::vector<std::string> &cmd, T &&t) {
-  cmd.push_back(std::forward<T>(t));
+  cmd.push_back(type::to_string(std::forward<T>(t)));
 }
 
 template<class T>
@@ -115,7 +165,7 @@ redisReply *RedisCmd::Yield() {
 }
 
 template<class T, class ...Args>
-T RedisCmd::InnerCmd(Args &&...args) {
+optional<T> RedisCmd::InnerCmd(Args &&...args) {
   auto cmd = writer::Cmd(std::forward<Args>(args)...);
   std::vector<const char *> argvs(cmd.size());
   std::vector<size_t> argvlens(cmd.size());
@@ -126,38 +176,39 @@ T RedisCmd::InnerCmd(Args &&...args) {
   CoInfo co_info{co_task_, yield_};
   redisAsyncCommandArgv(context_, GetCallback, &co_info, argvs.size(), &argvs[0], &argvlens[0]);
   auto reply = Yield();
+  if (is_nil(reply)) {
+    return {};
+  }
   RedisReplyReader reader(reply);
-  T t;
-  reader.ReadValue(t);
+  optional<T> t;
+  reader.ReadValue(t.value());
   return t;
 }
-template<class ...Args>
-void RedisCmd::NoRetInnerCmd(Args &&...args) {
-  auto cmd = writer::Cmd(std::forward<Args>(args)...);
-  std::vector<const char *> argvs(cmd.size());
-  std::vector<size_t> argvlens(cmd.size());
-  for (uint32_t i = 0; i < cmd.size(); ++i) {
-    argvs[i] = cmd[i].c_str();
-    argvlens[i] = cmd[i].length();
-  }
-  CoInfo co_info{co_task_, yield_};
-  redisAsyncCommandArgv(context_, GetCallback, &co_info, argvs.size(), &argvs[0], &argvlens[0]);
-  Yield();
+
+
+void RedisCmd::set(const std::string &key, const std::string &value) {
+  InnerCmd<Status>("set", key, value);
+  return;
 }
 
-void RedisCmd::Set(const std::string &key, const std::string &value) {
-  return NoRetInnerCmd("set", key, value);
+bool RedisCmd::setnx(const std::string &key, const std::string &value) {
+  return InnerCmd<bool>("setnx ", key, value).value();
 }
 
-std::string RedisCmd::Get(const std::string &key) {
+void RedisCmd::setex(const std::string &key, int64_t seconds, const std::string &value) {
+  InnerCmd<Status> ("setex ", key, seconds, value);
+  return;
+}
+
+optional<std::string> RedisCmd::get(const std::string &key) {
   return InnerCmd<std::string>("get", key);
 }
 
-std::vector<std::string> RedisCmd::MGet(const std::vector<std::string> &keys) {
-  return InnerCmd<std::vector<std::string>>("mget", keys);
+std::vector<optional<std::string>> RedisCmd::mget(const std::vector<std::string> &keys) {
+  return InnerCmd<std::vector<optional<std::string>>>("mget", keys).value();
 }
 
-long long RedisCmd::Incr(const std::string &key) {
+optional<long long> RedisCmd::incr(const std::string &key) {
   return InnerCmd<long long>("incr", key);
 }
 } // end namespace

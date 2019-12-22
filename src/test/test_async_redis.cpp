@@ -12,9 +12,9 @@
 #include "commlib/redis_client.h"
 #include "commlib/assert.hpp"
 
-void Debug(const std::vector<std::string> &value) {
+void Debug(const std::vector<optional<std::string>> &value) {
   for (auto &item : value) {
-    std::cout << item << std::endl;
+    std::cout << item.value() << std::endl;
   }
 }
 
@@ -28,20 +28,20 @@ int main(int argc, char **argv) {
   co_task_.DoTack([&redis_client](const CoYield &yield) {
     try {
       RedisCmd cmd(redis_client, yield);
-      cmd.Set("key1", "value1");
-      cmd.Set("key2", "value2");
+      cmd.set("key1", "value1");
+      cmd.set("key2", "value2");
       char b[6] = {0, 1, 2, 122, 9};
-      cmd.Set("key3", std::string(b, sizeof(b)));
-      std::cout << "value1:" << cmd.Get("key1") << std::endl;
-      std::cout << "value2:" << cmd.Get("key2") << std::endl;
-      std::cout << "value3:" << cmd.Get("key3").size() << std::endl;
+      cmd.set("key3", std::string(b, sizeof(b)));
+      std::cout << "value1:" << cmd.get("key1").value() << std::endl;
+      std::cout << "value2:" << cmd.get("key2").value() << std::endl;
+      std::cout << "value3:" << cmd.get("key3").value().size() << std::endl;
 
-      Debug(cmd.MGet({"key1", "key2"}));
-      cmd.Set("incr_key", "0");
-      cmd.Incr("incr_key");
-      cmd.Incr("incr_key");
-      cmd.Incr("incr_key");
-      ASSERT_EQ(cmd.Get<int>("incr_key"), 3);
+      Debug(cmd.mget({"key1", "key2"}));
+      cmd.set("incr_key", "0");
+      cmd.incr("incr_key");
+      cmd.incr("incr_key");
+      cmd.incr("incr_key");
+      ASSERT_EQ(cmd.get<int>("incr_key"), 3);
       redisAsyncDisconnect(redis_client.Context());
     } catch (const std::exception &e) {
       std::cout << "redis cmd error: " << e.what();

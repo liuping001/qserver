@@ -15,7 +15,10 @@ inline float string_to<float>(const std::string &str) { return std::stof(str); }
 template<>
 inline uint32_t string_to<uint32_t>(const std::string &str) { return std::stoul(str); }
 
-inline std::string to_string(const std::string &str) {
+inline const std::string &to_string(const std::string &str) {
+  return str;
+}
+inline std::string &to_string(std::string &str) {
   return str;
 }
 template<class T>

@@ -21,6 +21,8 @@
 #include <vector>
 #include <exception>
 #include <sstream>
+#include "optional.h"
+
 namespace Redis {
 
 void GetCallback(redisAsyncContext *c, void *r, void *privdata);
@@ -46,9 +48,7 @@ class RedisCmd {
   redisReply *Yield();
 
   template<class T, class ...Args>
-  T InnerCmd(Args &&...args);
-  template<class ...Args>
-  void NoRetInnerCmd(Args &&...args);
+  optional<T> InnerCmd(Args &&...args);
  public:
 
   RedisCmd(RedisClient &client, const CoYield &yield)
@@ -56,14 +56,19 @@ class RedisCmd {
         context_(client.Context()),
         yield_(yield) {}
 
-  void Set(const std::string &key, const std::string &value);
-  std::vector<std::string> MGet(const std::vector<std::string> &keys);
-  long long Incr(const std::string &key);
-  std::string Get(const std::string &key);
+  void set(const std::string &key, const std::string &value);
+  bool setnx(const std::string &key, const std::string &value);
+  void setex(const std::string &key, int64_t seconds, const std::string &value);
+  std::vector<optional<std::string>> mget(const std::vector<std::string> &keys);
+  optional<long long> incr(const std::string &key);
+  optional<std::string> get(const std::string &key);
   template<class T>
-  T Get(const std::string &key) {
-    auto value = Get(key);
-    return type::string_to<T>(value);
+  optional<T> get(const std::string &key) {
+    auto value = get(key);
+    if (value) {
+      type::string_to<T>(value.value());
+    }
+    return value;
   }
 };
 
