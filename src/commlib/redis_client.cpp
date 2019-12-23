@@ -50,10 +50,10 @@ int RedisClient::Init(std::string ip, int port) {
   return 0;
 }
 
-class RedisEx : std::exception {
+class RedisEx : public std::exception {
  public:
   RedisEx(const std::string &what) : what_(what) { }
-  const char* what() const final () { return what_.c_str(); }
+  const char* what() const noexcept final { return what_.c_str(); }
  private:
   std::string what_;
 };
@@ -116,7 +116,7 @@ class RedisReplyReader {
     for (size_t i = 0; i < reply_->elements; i++) {
       value.emplace_back();
       RedisReplyReader reader(reply_->element[i]);
-      reader.ReadValue(value.back());
+      reader.ReadValue(value.back().value());
     }
   }
 };
@@ -124,7 +124,8 @@ class RedisReplyReader {
 namespace writer {
 template<class T>
 void Append(std::vector<std::string> &cmd, T &&t) {
-  cmd.push_back(type::to_string(std::forward<T>(t)));
+  using namespace std;
+  cmd.push_back(to_string(std::forward<T>(t)));
 }
 
 template<class T>
@@ -136,7 +137,8 @@ void Append(std::vector<std::string> &cmd, const std::vector<T> &t) {
 
 template<class H, class ...T>
 void Append(std::vector<std::string> &cmd, H &&h, T &&... t) {
-  cmd.push_back(std::forward<H>(h));
+  using namespace std;
+  cmd.push_back(to_string(std::forward<H>(h)));
   Append(cmd, std::forward<T>(t)...);
 }
 template<class ...T>

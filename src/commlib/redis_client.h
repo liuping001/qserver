@@ -64,11 +64,12 @@ class RedisCmd {
   optional<std::string> get(const std::string &key);
   template<class T>
   optional<T> get(const std::string &key) {
+    optional<T> ret = {};
     auto value = get(key);
     if (value) {
-      type::string_to<T>(value.value());
+      ret.value() = type::string_to<T>(value.value());
     }
-    return value;
+    return ret;
   }
 };
 

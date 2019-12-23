@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
       cmd.incr("incr_key");
       cmd.incr("incr_key");
       cmd.incr("incr_key");
-      ASSERT_EQ(cmd.get<int>("incr_key"), 3);
+      ASSERT_EQ(cmd.get<int>("incr_key").value(), 3);
       redisAsyncDisconnect(redis_client.Context());
     } catch (const std::exception &e) {
       std::cout << "redis cmd error: " << e.what();
