@@ -38,7 +38,7 @@ int main(int argc , char **argv) {
   AMQP::TcpChannel channel(&connection);
 
   // create a temporary queue
-  channel.declareQueue(AMQP::exclusive).onSuccess([&connection](const std::string &name,
+  channel.declareQueue("1.1.1.1", AMQP::exclusive).onSuccess([&connection](const std::string &name,
                                                                 uint32_t messagecount,
                                                                 uint32_t consumercount) {
 
@@ -53,6 +53,9 @@ int main(int argc , char **argv) {
     std::cout << "error: " << message << std::endl;
   });
 
+  for (auto i = 0; i <= 10; i++) {
+    channel.publish("", "1.1.1.1", "hello " + std::to_string(i));
+  }
   // run the handler
   // a t the moment, one will need SIGINT to stop.  In time, should add signal handling through boost API.
   return service.run();
