@@ -22,7 +22,7 @@
  *  Main program
  *  @return int
  */
-int main() {
+int main(int argc , char **argv) {
 
   // access to the boost asio handler
   // note: we suggest use of 2 threads - normally one is fin (we are simply demonstrating thread safety).
@@ -32,7 +32,7 @@ int main() {
   AMQP::LibBoostAsioHandler handler(service);
 
   // make a connection
-  AMQP::TcpConnection connection(&handler, AMQP::Address("amqp://liuping:liuping@192.168.1.201"));
+  AMQP::TcpConnection connection(&handler, AMQP::Address(argv[1]));
 
   // we need a channel too
   AMQP::TcpChannel channel(&connection);
