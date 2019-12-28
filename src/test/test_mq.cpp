@@ -26,13 +26,13 @@ int main() {
 
   // access to the boost asio handler
   // note: we suggest use of 2 threads - normally one is fin (we are simply demonstrating thread safety).
-  boost::asio::io_service service(4);
+  boost::asio::io_service service(2);
 
   // handler for libev
   AMQP::LibBoostAsioHandler handler(service);
 
   // make a connection
-  AMQP::TcpConnection connection(&handler, AMQP::Address("amqp://guest:guest@localhost/"));
+  AMQP::TcpConnection connection(&handler, AMQP::Address("amqp://liuping:liuping@192.168.1.201"));
 
   // we need a channel too
   AMQP::TcpChannel channel(&connection);
@@ -47,6 +47,10 @@ int main() {
 
     // now we can close the connection
     connection.close();
+  });
+
+  channel.declareQueue(AMQP::exclusive).onError([&connection](const char *message){
+    std::cout << "error: " << message << std::endl;
   });
 
   // run the handler
