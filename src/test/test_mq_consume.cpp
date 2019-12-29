@@ -25,7 +25,6 @@ int main(int argc , char **argv) {
     std::cout << "declare exchange success" << std::endl;
   });
 
-
   // create a temporary queue
   channel_consume.declareQueue("Q:1.1.1.1", AMQP::durable).onSuccess([&connection](const std::string &name,
                                                                                    uint32_t messagecount,
@@ -34,7 +33,7 @@ int main(int argc , char **argv) {
     std::cout << "declared queue " << name << std::endl;
   });
 
-  channel_consume.bindQueue("Q:1.1.1.1", "router1", "1.1.1.1");
+  channel_consume.bindQueue("router1", "Q:1.1.1.1",  "1.1.1.1");
   auto &consumeQ = channel_consume.consume("Q:1.1.1.1");
   consumeQ.onMessage([](const AMQP::Message &message, uint64_t deliveryTag, bool redelivered){
     std::cout << "msg:" << message.body() << std::endl;
