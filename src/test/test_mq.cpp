@@ -44,7 +44,9 @@ int main(int argc , char **argv) {
 
 
   for (auto i = 0; i <= 10; i++) {
-    channel.publish("router1", "1.1.1.1", "hello " + std::to_string(i));
+    channel.publish("router1", "1.1.1.1", "hello " + std::to_string(i)).onError([](const char *message){
+      std::cout << message << "\n";
+    });
   }
 
   // run the handler

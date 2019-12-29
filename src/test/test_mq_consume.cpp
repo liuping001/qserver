@@ -20,6 +20,12 @@ int main(int argc , char **argv) {
   AMQP::TcpConnection connection(&handler, AMQP::Address(argv[1]));
 
   AMQP::TcpChannel channel_consume(&connection);
+
+  channel_consume.declareExchange("router1", AMQP::ExchangeType::direct).onSuccess([](){
+    std::cout << "declare exchange success" << std::endl;
+  });
+
+
   // create a temporary queue
   channel_consume.declareQueue("Q:1.1.1.1", AMQP::durable).onSuccess([&connection](const std::string &name,
                                                                                    uint32_t messagecount,
@@ -27,11 +33,13 @@ int main(int argc , char **argv) {
     // report the name of the temporary queue
     std::cout << "declared queue " << name << std::endl;
   });
+
   channel_consume.bindQueue("Q:1.1.1.1", "router1", "1.1.1.1");
   auto &consumeQ = channel_consume.consume("Q:1.1.1.1");
   consumeQ.onMessage([](const AMQP::Message &message, uint64_t deliveryTag, bool redelivered){
     std::cout << "msg:" << message.body() << std::endl;
   });
+
   // run the handler
   // a t the moment, one will need SIGINT to stop.  In time, should add signal handling through boost API.
   return service.run();
