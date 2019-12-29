@@ -8,6 +8,9 @@ target_link_libraries(test_timer commlib)
 add_executable(test_mq test_mq.cpp)
 target_link_libraries(test_mq amqpcpp boost_system pthread)
 
+add_executable(test_mq_consume test_mq_consume.cpp)
+target_link_libraries(test_mq_consume amqpcpp boost_system pthread)
+
 add_executable(async_redis test_async_redis.cpp)
 target_link_libraries(async_redis hiredis-vip event commlib)
 
