@@ -44,6 +44,10 @@ class CoTask {
     co_pool_.FreeCoroutine(co_id);
   }
 
+  bool CoIdExist(uint32_t co_id) {
+    auto ret = co_pool_.FindCoId(co_id);
+    return ret != nullptr;
+  }
   // 返回本次resume的个数
   int ResumeAll();
 
