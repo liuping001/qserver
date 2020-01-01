@@ -5,15 +5,11 @@
 #include "redis_client.h"
 
 namespace Redis {
-struct CoInfo {
-  CoTask &co_task;
-  const CoYield &yield;
-};
 
 void GetCallback(redisAsyncContext *c, void *r, void *privdata) {
-  auto info = static_cast<CoInfo *> (privdata);
+  auto info = static_cast<CoYield *> (privdata);
   if (info != nullptr) {
-    info->co_task.ResumeOneWithMsg(info->yield.co_id_, r);
+    info->ResumeOneWithMsg(r);
   }
 }
 
@@ -175,8 +171,8 @@ optional<T> RedisCmd::InnerCmd(Args &&...args) {
     argvs[i] = cmd[i].c_str();
     argvlens[i] = cmd[i].length();
   }
-  CoInfo co_info{co_task_, yield_};
-  redisAsyncCommandArgv(context_, GetCallback, &co_info, argvs.size(), &argvs[0], &argvlens[0]);
+
+  redisAsyncCommandArgv(context_, GetCallback, (void *)&yield_, argvs.size(), &argvs[0], &argvlens[0]);
   auto reply = Yield();
   if (is_nil(reply)) {
     return {};

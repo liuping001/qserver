@@ -20,8 +20,8 @@ int CoTask::ResumeAll() {
 }
 
 void CoTask::Function(void *co_pool, void *co, void *co_task) {
-  auto &co_pool_ = *static_cast<CoPool *>(co_pool);
+  auto &co_task_ = *static_cast<CoTask *>(co_task);
   auto &co_ = *static_cast<Coroutine *>(co);
-  CoYield co_yield(co_pool_, co_.co_id);
+  CoYield co_yield(co_task_, co_.co_id);
   co_.task(co_yield);
 }
