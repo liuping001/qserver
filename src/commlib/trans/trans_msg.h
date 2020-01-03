@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <string>
 
 struct TransMsg {
   TransMsg() {}
@@ -11,4 +12,5 @@ struct TransMsg {
   virtual uint32_t CoId() const = 0;
   virtual const char *Data() const { return nullptr; }
   virtual uint32_t Size() const { return 0; }
+  virtual std::string Msg() const { ""; }
 };

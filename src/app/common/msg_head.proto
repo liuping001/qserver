@@ -1,0 +1,13 @@
+
+syntax = "proto3";
+
+package proto.Msg;
+
+message MsgHead {
+    uint32 cmd = 1;
+    uint32 src_co_id = 2;
+    uint32 dst_co_id = 3;
+    string src_bus_id = 4;
+    string dst_bus_id = 5;
+    string msg = 6;
+}

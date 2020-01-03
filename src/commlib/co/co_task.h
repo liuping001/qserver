@@ -68,7 +68,7 @@ class CoYield {
     co_task_.FreeCoroutine(co_id_);
   }
 
-  int Yield() const {
+  int Yield() {
     return co_task_.Yield(co_id_);
   }
 

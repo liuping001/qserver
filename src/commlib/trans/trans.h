@@ -7,7 +7,7 @@
 
 class Trans {
  public:
-  virtual void DoTask(const CoYield &co) {};
+  virtual void DoTask(const CoYield &co) = 0;
   virtual ~Trans() {}
 
  protected:

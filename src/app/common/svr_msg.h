@@ -9,14 +9,14 @@
 struct SvrMsgHead {
   uint32_t cmd;
   uint32_t co_id;
+  uint32_t data_size;
   uint32_t src_bus_id;
   uint32_t dst_bus_id;
-  uint32_t data_size;
 };
 
 struct SvrMsg : public TransMsg {
-  uint32_t Cmd() const { return MsgHead()->cmd; }
-  uint32_t CoId() const { return MsgHead()->co_id; }
+  uint32_t Cmd() const final { return MsgHead()->cmd; }
+  uint32_t CoId() const final { return MsgHead()->co_id; }
   const char *Data() const { return msg + sizeof(SvrMsgHead); }
   uint32_t Size() const { return MsgHead()->data_size; }
   SvrMsgHead *MsgHead() { return static_cast<SvrMsgHead *>(msg); }
