@@ -4,4 +4,4 @@ add_library(common
         svr_comm_trans.cpp
 )
 
-add_link_options(common amqpcpp commlib )
+target_link_libraries(common amqpcpp commlib)

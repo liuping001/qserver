@@ -12,5 +12,5 @@ set (AMQP-CPP_LINUX_TCP ON CACHE BOOL "x")
 add_subdirectory(third/AMQP-CPP)
 
 add_subdirectory(third)
-add_subdirectory(test)
 add_subdirectory(app/common)
+add_subdirectory(test)

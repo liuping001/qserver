@@ -6,8 +6,8 @@
 
 #include <functional>
 #include "net_handler.h"
-#include "third/AMQP-CPP/include/amqpcpp/linux_tcp.h"
 #include "third/AMQP-CPP/include/amqpcpp.h"
+#include "third/AMQP-CPP/include/amqpcpp/linux_tcp.h"
 
 class RabbitMQNet : public NetHandler {
  public:

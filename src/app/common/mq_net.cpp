@@ -7,7 +7,7 @@
 
 void RabbitMQNet::SendMsg(proto::Msg::MsgHead &msg) {
   msg.set_src_bus_id(key_);
-  channel_.publish(exchange_, msg.dst_bus_id(), msg.SerializeAsString());
+  channel_send_.publish(exchange_, msg.dst_bus_id(), msg.SerializeAsString());
 }
 
 RabbitMQNet::RabbitMQNet(AMQP::TcpConnection &connection, std::string exchange, std::string queue, std::string key) :

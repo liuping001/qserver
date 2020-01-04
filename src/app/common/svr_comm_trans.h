@@ -11,7 +11,8 @@
 struct MsgHead : public TransMsg {
   uint32_t Cmd() const final { return msg_head_.cmd(); }
   uint32_t CoId() const final { return msg_head_.src_co_id(); }
-  std::string Msg() const final { return msg_head_.msg(); }
+  const char *Data() const { return msg_head_.msg().c_str(); }
+  uint32_t Size() const { return msg_head_.msg().size(); }
   proto::Msg::MsgHead msg_head_;
 };
 
@@ -22,10 +23,10 @@ class SvrCommTrans : public Trans {
   void SendMsg(const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
   void SendMsg(const proto::Msg::MsgHead &src_msg, const std::string & msg);
 
-  template <class R>
-  R SendMsgRpc(const CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
-  template <class R>
-  R SendMsgRpc(const CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string & msg);
+  template <class Rsp>
+  Rsp SendMsgRpc(const CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
+  template <class Rsp>
+  Rsp SendMsgRpc(const CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string & msg);
 
  protected:
 //  void DoTask(const CoYield &co) override;
@@ -36,8 +37,8 @@ class SvrCommTrans : public Trans {
   NetHandler *net_;
 };
 
-template <class R>
-R SvrCommTrans::SendMsgRpc(const CoYield &co,
+template <class Rsp>
+Rsp SvrCommTrans::SendMsgRpc(const CoYield &co,
                            const std::string &dst_svr_id,
                            uint32_t cmd,
                            const std::string &msg,
@@ -50,14 +51,14 @@ R SvrCommTrans::SendMsgRpc(const CoYield &co,
   if (ret_msg == nullptr) {
     throw std::runtime_error("nullptr msg");
   }
-  R ret;
-  if(!ret.ParseFromString(ret_msg->Msg())) {
+  Rsp rsp;
+  if(!rsp.ParseFromArray(ret_msg->Data(), ret_msg->Size())) {
     throw std::runtime_error("parse pb failed");
   }
-  return ret;
+  return rsp;
 }
 
-template <class R>
-R SvrCommTrans::SendMsgRpc(const CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string &msg) {
-  return SendMsgRpc(co, src_msg.src_bus_id(), src_msg.cmd() + 1, msg, src_msg.dst_co_id());
+template <class Rsp>
+Rsp SvrCommTrans::SendMsgRpc(const CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string &msg) {
+  return SendMsgRpc<Rsp>(co, src_msg.src_bus_id(), src_msg.cmd() + 1, msg, src_msg.dst_co_id());
 }

@@ -17,7 +17,7 @@ void SvrCommTrans::SendMsg(const std::string & dst_svr_id, uint32_t cmd, const s
   proto::Msg::MsgHead msg_head;
   msg_head.set_msg(msg);
   msg_head.set_cmd(cmd);
-  msg_head.set_dst_co_id(dst_svr_id);
+  msg_head.set_dst_co_id(dst_co_id);
   msg_head.set_dst_bus_id(dst_svr_id);
   net_->SendMsg(msg_head);
 }
@@ -32,7 +32,7 @@ int SvrCommTrans::SendMsgThenYield(const CoYield &co, const std::string & dst_sv
   msg_head.set_msg(msg);
   msg_head.set_cmd(cmd);
   msg_head.set_src_co_id(co.co_id_);
-  msg_head.set_dst_co_id(dst_svr_id);
+  msg_head.set_dst_co_id(dst_co_id);
   msg_head.set_dst_bus_id(dst_svr_id);
   net_->SendMsg(msg_head);
   return co.Yield();
