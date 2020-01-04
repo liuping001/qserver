@@ -48,7 +48,7 @@ class TransMgr : public S<TransMgr> {
         return -1;
       }
       auto trans = trans_pool.get_shared();
-      auto id = co_task_.AddTack([trans](const CoYield &co) { trans->DoTask(co); });
+      auto id = co_task_.AddTack([trans](CoYield &co) { trans->DoTask(co); });
       return co_task_.ResumeOneWithMsg(id, const_cast<TransMsg *>(&msg));
     }
     if (!co_task_.CoIdExist(co_id)) {
@@ -72,7 +72,7 @@ class TransMgr : public S<TransMgr> {
   }
   friend class Trans;
  private:
-  int Yield(const CoYield &yield, int32_t time_out_ms) {
+  int Yield(CoYield &yield, int32_t time_out_ms) {
     co_id_timer_id_[yield.co_id_] = timer_.AddTimer(time_mgr::now_ms() + time_out_ms,
                                                     std::bind(&CoTask::ResumeOne, &co_task_, yield.co_id_, true));
     return yield.Yield();

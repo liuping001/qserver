@@ -7,7 +7,7 @@
 #include <functional>
 class CoYield;
 
-using task_type = std::function<void(const CoYield &)>;
+using task_type = std::function<void(CoYield &)>;
 const int MAX_COROUTINE_STACK = 1024 * 128;
 
 using CoMsg = void *;

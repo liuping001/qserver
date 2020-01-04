@@ -43,7 +43,7 @@ class RedisClient {
 class RedisCmd {
   CoTask &co_task_;
   redisAsyncContext *context_;
-  const CoYield &yield_;
+  CoYield &yield_;
 
   redisReply *Yield();
 
@@ -51,7 +51,7 @@ class RedisCmd {
   optional<T> InnerCmd(Args &&...args);
  public:
 
-  RedisCmd(RedisClient &client, const CoYield &yield)
+  RedisCmd(RedisClient &client, CoYield &yield)
       : co_task_(client.GetCoTask()),
         context_(client.Context()),
         yield_(yield) {}

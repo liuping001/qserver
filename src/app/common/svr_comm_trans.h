@@ -24,21 +24,21 @@ class SvrCommTrans : public Trans {
   void SendMsg(const proto::Msg::MsgHead &src_msg, const std::string & msg);
 
   template <class Rsp>
-  Rsp SendMsgRpc(const CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
+  Rsp SendMsgRpc(CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
   template <class Rsp>
-  Rsp SendMsgRpc(const CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string & msg);
+  Rsp SendMsgRpc(CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string & msg);
 
  protected:
 //  void DoTask(const CoYield &co) override;
 
  private:
-  int SendMsgThenYield(const CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg,
+  int SendMsgThenYield(CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg,
                   uint32_t dst_co_id);
   NetHandler *net_;
 };
 
 template <class Rsp>
-Rsp SvrCommTrans::SendMsgRpc(const CoYield &co,
+Rsp SvrCommTrans::SendMsgRpc(CoYield &co,
                            const std::string &dst_svr_id,
                            uint32_t cmd,
                            const std::string &msg,
@@ -59,6 +59,6 @@ Rsp SvrCommTrans::SendMsgRpc(const CoYield &co,
 }
 
 template <class Rsp>
-Rsp SvrCommTrans::SendMsgRpc(const CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string &msg) {
+Rsp SvrCommTrans::SendMsgRpc(CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string &msg) {
   return SendMsgRpc<Rsp>(co, src_msg.src_bus_id(), src_msg.cmd() + 1, msg, src_msg.dst_co_id());
 }

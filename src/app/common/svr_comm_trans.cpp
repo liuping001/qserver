@@ -26,7 +26,7 @@ void SvrCommTrans::SendMsg(const proto::Msg::MsgHead &src_msg, const std::string
   SendMsg(src_msg.src_bus_id(), src_msg.cmd(), msg, src_msg.src_co_id());
 }
 
-int SvrCommTrans::SendMsgThenYield(const CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg,
+int SvrCommTrans::SendMsgThenYield(CoYield &co, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg,
                            uint32_t dst_co_id) {
   proto::Msg::MsgHead msg_head;
   msg_head.set_msg(msg);

@@ -7,9 +7,9 @@
 
 class Trans {
  public:
-  virtual void DoTask(const CoYield &co) = 0;
+  virtual void DoTask(CoYield &co) = 0;
   virtual ~Trans() {}
 
  protected:
-  int Yield(const CoYield &yield, int32_t time_out_ms = 5000);
+  int Yield(CoYield &yield, int32_t time_out_ms = 5000);
 };

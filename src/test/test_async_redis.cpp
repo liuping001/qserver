@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   RedisClient redis_client(*base, co_task_);
   redis_client.Init("127.0.0.1", 6379);
 
-  co_task_.DoTack([&redis_client](const CoYield &yield) {
+  co_task_.DoTack([&redis_client](CoYield &yield) {
     try {
       RedisCmd cmd(redis_client, yield);
       cmd.set("key1", "value1");

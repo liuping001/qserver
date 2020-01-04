@@ -14,7 +14,7 @@ enum {
 class TransA : public RegisterTrans<TransA, CMD_TRANSA> {
  public:
   TransA() {};
-  void DoTask(const CoYield &co) final {
+  void DoTask(CoYield &co) final {
     std::cout << "yield before " << co.co_id_ << "\n";
     auto ret = Yield(co, 1000);
     if (ret != 0) {
@@ -31,7 +31,7 @@ class TransA : public RegisterTrans<TransA, CMD_TRANSA> {
 class TransB : public RegisterTrans<TransB, CMD_TRANSB> {
  public:
   TransB() {};
-  void DoTask(const CoYield &co) final {
+  void DoTask(CoYield &co) final {
     std::cout << "yield before " << co.co_id_ << "\n";
     auto ret = Yield(co);
     if (ret != 0) {
@@ -44,7 +44,7 @@ class TransB : public RegisterTrans<TransB, CMD_TRANSB> {
 class TransC : public RegisterTrans<TransC, CMD_TRANSC> {
  public:
   TransC() {};
-  void DoTask(const CoYield &co) final {
+  void DoTask(CoYield &co) final {
     std::cout << "yield before " << co.co_id_ << "\n";
     auto ret = Yield(co);
     if (ret != 0) {
