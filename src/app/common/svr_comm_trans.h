@@ -46,7 +46,7 @@ R SvrCommTrans::SendMsgRpc(const CoYield &co,
   if (ret != 0) {
     throw std::runtime_error("time out");
   }
-  MsgHead *ret_msg = co.GetMsg();
+  MsgHead *ret_msg = static_cast<MsgHead*>(co.GetMsg());
   if (ret_msg == nullptr) {
     throw std::runtime_error("nullptr msg");
   }
