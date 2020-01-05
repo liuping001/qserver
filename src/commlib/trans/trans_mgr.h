@@ -22,13 +22,13 @@ class TransMgr : public S<TransMgr> {
    * @param count 注册T事务 的数量
    * @return
    */
-  template<class T>
-  bool RegisterCmd(uint32_t cmd, int count) {
+  template<class T, class ...Args>
+  bool RegisterCmd(uint32_t cmd, int count, Args... args) {
     if (trans_map_.find(cmd) != trans_map_.end()) {
       return false;
     }
     for (int i = 0; i < count; i++) {
-      trans_map_[cmd].add(std::unique_ptr<Trans>((Trans *) new T()));
+      trans_map_[cmd].add(std::unique_ptr<Trans>((Trans *) new T(std::forward<Args>(args)...)));
     }
     return true;
   }

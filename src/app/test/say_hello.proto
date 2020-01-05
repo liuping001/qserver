@@ -1,0 +1,13 @@
+
+
+syntax = "proto3";
+
+package proto.Test;
+
+message SayHelloReq {
+    string content = 1;
+}
+
+message SayHelloRsp {
+    string content = 1;
+}

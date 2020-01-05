@@ -13,4 +13,5 @@ add_subdirectory(third/AMQP-CPP)
 
 add_subdirectory(third)
 add_subdirectory(app/common)
+add_subdirectory(app/test)
 add_subdirectory(test)
