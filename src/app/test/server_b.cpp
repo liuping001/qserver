@@ -11,7 +11,7 @@
 #include <amqpcpp/libevent.h>
 #include <event2/event_struct.h>
 #include <iostream>
-
+#include <functional>
 #include "say_hello.pb.h"
 
 struct SayHello : public SvrCommTrans {
@@ -25,20 +25,32 @@ struct SayHello : public SvrCommTrans {
   }
 };
 
-struct event ev;
-struct timeval tv;
+struct EventInfo {
+  struct event ev;
+  struct timeval tv;
+  std::function<void ()> cb;
+  bool repeat = false;
 
-uint32_t count = 0;
-void time_cb(int fd, short event, void *argc) {
-  TransMgr::get().TickTimeOutCo();
-  event_add(&ev, &tv); // reschedule timer
-  count++;
-
-  if (count == 2000) {
-    MsgHead msg_head;
-    msg_head.msg_head_.set_cmd(1001);
-    TransMgr::get().OnMsg(msg_head);
+  static void CB(int fd, short event, void *argc) {
+    EventInfo *info = static_cast<EventInfo*>(argc);
+    info->cb();
+    if (info->repeat) {
+      event_add(&info->ev, &info->tv);
+    }
   }
+};
+
+void AddTimer(struct event_base * evbase, uint32_t ms, std::function<void ()> cb, bool repeat = false) {
+  auto info = new EventInfo();
+  auto sec = ms / 1000;
+  auto usec = ms % 1000;
+  info->tv.tv_sec = sec;
+  info->tv.tv_usec = usec * 1000;
+  info->cb = std::move(cb);
+  info->repeat = repeat;
+
+  event_assign(&info->ev, evbase, -1, 0, EventInfo::CB, info);
+  event_add(&info->ev, &info->tv);
 }
 
 int main() {
@@ -57,14 +69,20 @@ int main() {
     TransMgr::get().OnMsg(msg_head);
   });
 
-  TransMgr::get().RegisterCmd<SayHello>(1001, 1, &mq_net);
+  TransMgr::get().RegisterCmd<SayHello>(1001, 1000, &mq_net);
 
-  tv.tv_sec = 0;
-  tv.tv_usec = 1000;
+  AddTimer(evbase, 1, []() {
+    TransMgr::get().TickTimeOutCo();
+  }, true);
 
-  event_assign(&ev, evbase, -1, 0, time_cb, NULL);
-  event_add(&ev, &tv);
-
+  auto task = [=]() {
+    AddTimer(evbase, 1, [](){
+      MsgHead msg_head;
+      msg_head.msg_head_.set_cmd(1001);
+      TransMgr::get().OnMsg(msg_head);
+    }, true);
+  };
+  AddTimer(evbase, 2000, task);
   // run the loop
   event_base_dispatch(evbase);
 

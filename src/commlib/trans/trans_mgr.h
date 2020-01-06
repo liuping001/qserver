@@ -45,6 +45,7 @@ class TransMgr : public S<TransMgr> {
     if (co_id == 0) { // init
       auto &trans_pool = trans_map_[cmd];
       if (trans_pool.empty()) {
+        std::cout << "trans empty\n";
         return -1;
       }
       auto trans = trans_pool.get_shared();
@@ -52,6 +53,7 @@ class TransMgr : public S<TransMgr> {
       return co_task_.ResumeOneWithMsg(id, const_cast<TransMsg *>(&msg));
     }
     if (!co_task_.CoIdExist(co_id)) {
+      std::cout << "co id not exist\n";
       return -1;
     }
     // 从定时器中取消

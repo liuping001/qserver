@@ -57,6 +57,7 @@ void CoPool::FreeCoroutine(uint32_t co_id) {
   auto iter = action_coroutine.find(co_id);
   if (iter == action_coroutine.end()) { return; }
   free_coroutine.push_back(iter->second);
+  iter->second->task = {};
   action_coroutine.erase(iter);
 }
 
