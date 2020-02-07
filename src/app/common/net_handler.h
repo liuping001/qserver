@@ -5,7 +5,7 @@
 #pragma once
 
 #include "commlib/trans/trans_msg.h"
-#include "msg_head.pb.h"
+#include "app/proto/msg_head.pb.h"
 
 struct NetHandler {
 
@@ -17,5 +17,6 @@ struct NetHandler {
   virtual ~NetHandler() {}
 
   std::function<void (const std::string &)> recv_msg_handler_;
+  std::string self_id_;
 };
 

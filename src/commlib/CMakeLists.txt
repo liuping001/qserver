@@ -1,7 +1,6 @@
 set(SOURCE_FILES
         co/co_task.cpp
         co/coroutine.cpp
-        redis_client.cpp
         trans/trans.cpp
         logging.cpp
         )
@@ -12,3 +11,11 @@ add_library(co
         co/co_task.cpp
         co/coroutine.cpp
         )
+
+add_library(redis_handler
+        redis/command.cpp
+        redis/command_options.cpp
+        redis/redis.cpp
+        redis/sds.cpp
+        redis/connection.cpp
+        redis/reply.cpp)

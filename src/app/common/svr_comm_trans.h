@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "commlib/trans/trans.h"
+#include "commlib/trans/trans_mgr.h"
 #include "net_handler.h"
-#include "msg_head.pb.h"
+#include "app/proto/msg_head.pb.h"
+#include "commlib/redis/redis.h"
 
 struct MsgHead : public TransMsg {
   uint32_t Cmd() const final { return msg_head_.cmd(); }
@@ -18,37 +19,44 @@ struct MsgHead : public TransMsg {
 
 class SvrCommTrans : public Trans {
  public:
-  SvrCommTrans(NetHandler *net);
-
-  void SendMsg(const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
-  void SendMsg(const proto::Msg::MsgHead &src_msg, const std::string & msg);
+  void SendMsg(const std::string & dst_svr_id, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
+  void SendMsg(const proto::Msg::MsgHead &src_msg, const google::protobuf::Message & msg);
+  void SendMsgBySvrTye(uint32_t type, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
 
   template <class Rsp>
-  Rsp SendMsgRpc(CoYield &co, const std::string & src_svr_id, const std::string & dst_svr_id, uint32_t cmd, const std::string & msg, uint32_t dst_co_id = 0);
+  Rsp SendMsgRpc(const std::string & dst_svr_id, uint32_t cmd, const google::protobuf::Message &msg, uint32_t dst_co_id = 0);
   template <class Rsp>
-  Rsp SendMsgRpc(CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string & msg);
+  Rsp SendMsgRpcByType(uint32_t type, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
+  template <class Rsp>
+  Rsp SendMsgRpc(const proto::Msg::MsgHead &src_msg, const google::protobuf::Message & msg);
+
+  static void Init(NetHandler *net);
+  static NetHandler *net_;
 
  protected:
-//  void DoTask(const CoYield &co) override;
+  void DoTask(CoYield &co) final;
+  virtual void Task(CoYield &co) = 0;
+  sw::redis::Redis& Redis();
 
  private:
-  int SendMsgThenYield(CoYield &co,  const std::string & src_svr_id, const std::string & dst_svr_id, uint32_t cmd,
-      const std::string & msg, uint32_t dst_co_id);
-  NetHandler *net_;
+  sw::redis::Redis *_redis_handler;
+  CoYield *_co;
+ private:
+  int SendMsgThenYield(const std::string & src_svr_id, const std::string & dst_svr_id, uint32_t cmd,
+                       const google::protobuf::Message &msg, uint32_t dst_co_id);
+
 };
 
 template <class Rsp>
-Rsp SvrCommTrans::SendMsgRpc(CoYield &co,
-    const std::string & src_svr_id,
-    const std::string &dst_svr_id,
+Rsp SvrCommTrans::SendMsgRpc(const std::string &dst_svr_id,
     uint32_t cmd,
-    const std::string &msg,
+    const google::protobuf::Message &msg,
     uint32_t dst_co_id) {
-  auto ret = SendMsgThenYield(co, src_svr_id, dst_svr_id, cmd, msg, dst_co_id);
+  auto ret = SendMsgThenYield(net_->self_id_, dst_svr_id, cmd, msg, dst_co_id);
   if (ret != 0) {
     throw std::runtime_error("time out");
   }
-  MsgHead *ret_msg = static_cast<MsgHead*>(co.GetMsg());
+  MsgHead *ret_msg = static_cast<MsgHead*>((*_co).GetMsg());
   if (ret_msg == nullptr) {
     throw std::runtime_error("nullptr msg");
   }
@@ -60,6 +68,26 @@ Rsp SvrCommTrans::SendMsgRpc(CoYield &co,
 }
 
 template <class Rsp>
-Rsp SvrCommTrans::SendMsgRpc(CoYield &co, const proto::Msg::MsgHead &src_msg, const std::string &msg) {
-  return SendMsgRpc<Rsp>(co, src_msg.dst_bus_id(), src_msg.src_bus_id(), src_msg.cmd() + 1, msg, src_msg.dst_co_id());
+Rsp SvrCommTrans::SendMsgRpc(const proto::Msg::MsgHead &src_msg, const google::protobuf::Message &msg) {
+  return SendMsgRpc<Rsp>(src_msg.dst_bus_id(), src_msg.src_bus_id(), src_msg.cmd() + 1, msg, src_msg.dst_co_id());
 }
+
+template <class Rsp>
+Rsp SvrCommTrans::SendMsgRpcByType(uint32_t type, uint32_t cmd, const google::protobuf::Message &msg, uint32_t dst_co_id) {
+  SendMsgRpc<Rsp>(std::to_string(type) + ".1", cmd, msg, dst_co_id);
+}
+
+
+template<class T, uint32_t cmd, uint16_t count = 1>
+class RegisterSvrTrans : public SvrCommTrans {
+ public:
+  RegisterSvrTrans() : SvrCommTrans() {
+    reg;
+  }
+ private:
+  static bool reg;
+};
+
+
+template<class T, uint32_t cmd, uint16_t count>
+bool RegisterSvrTrans<T, cmd, count>::reg = TransMgr::get().RegisterCmd<T>(cmd, count);

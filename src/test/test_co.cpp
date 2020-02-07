@@ -73,10 +73,7 @@ int main() {
   TransMgr::get().OnMsg(MsgType{CMD_TRANSB, 2});
   TransMgr::get().OnMsg(MsgType{CMD_TRANSC, 3});
   while (1) {
-    auto b = TransMgr::get().TickTimeOutCo();
-    if (b) {
-      return 0;
-    }
+    TransMgr::get().TickTimeOutCo();
     time_mgr::sleep(100);
   }
 }

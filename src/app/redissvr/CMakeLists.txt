@@ -1,0 +1,5 @@
+add_executable(redissvr
+        redis_client.cpp
+        main.cpp
+        )
+target_link_libraries(redissvr common event hiredis-vip)

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package proto.cmd;
+
+enum RedisSvrCmd {
+    kREDIS_CMD_NONE = 0;
+    kREDIS_CMD_REQ = 0x10001;
+    kREDIS_CMD_RSP = 0x10002;
+}

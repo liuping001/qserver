@@ -1,0 +1,21 @@
+
+syntax = "proto3";
+
+package proto.redis;
+
+message RedisCmdReq {
+    repeated string cmd_argv = 1;
+}
+
+message redisReply {
+    int32 type = 1;
+    uint64 integer = 2;
+//    int32 len = 3;
+    string str = 4;
+//    int64 elements = 5;
+    repeated redisReply element = 6;
+}
+
+message RedisCmdRsp {
+    redisReply reply = 1;
+}

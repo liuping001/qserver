@@ -1,0 +1,7 @@
+mq_addr="{{mq_ip}}"
+router="{{router}}"
+self_id="1.1"
+
+[redis]
+ip="{{redis_ip}}"
+port="{{redis_port}}"

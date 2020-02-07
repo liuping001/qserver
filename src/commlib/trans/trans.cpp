@@ -6,5 +6,5 @@
 #include "commlib/trans/trans_mgr.h"
 
 int Trans::Yield(CoYield &yield, int32_t time_out_ms) {
-  TransMgr::get().Yield(yield, time_out_ms);
+  return yield.Yield(time_out_ms);
 }
