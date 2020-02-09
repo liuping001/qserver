@@ -1,0 +1,26 @@
+deploy_info:
+  init_host:
+    copy_file:
+      - src: dev_server_supervisor.ini
+        dest: /etc/supervisord.d/
+    init_cmd:
+      - "supervisorctl  -c /etc/supervisord.conf update"
+      - "mkdir -p /data"
+      - "mkdir -p /data/redissvr"
+      - "mkdir -p /data/test"
+
+  redissvr:
+    copy_file:
+      - src: ../build/app/redissvr/redissvr
+        dest: /data/redissvr/redissvr
+    template:
+      - src: ../app/redissvr/redissvr.toml
+        dest: /data/redissvr/redissvr.toml
+
+  test:
+    push:
+      - src: ../build/app/test/test
+        dest: /data/test/test
+    template:
+      - src: ../app/test/test.toml
+        dest: /data/test/test.toml

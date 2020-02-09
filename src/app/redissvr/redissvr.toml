@@ -1,4 +1,4 @@
-mq_addr="{{mq_ip}}"
+mq_addr="{{mq_addr}}"
 router="{{router}}"
 self_id="1.1"
 
