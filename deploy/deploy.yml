@@ -1,6 +1,0 @@
----
-
-- hosts: dev1
-  tasks:
-    - include: "./svr/{{ item }}.yml"
-      with_items: "{{ all }}"
