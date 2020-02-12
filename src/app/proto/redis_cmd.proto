@@ -5,6 +5,7 @@ package proto.redis;
 
 message RedisCmdReq {
     repeated string cmd_argv = 1;
+    string formatted_cmd = 2;
 }
 
 message redisReply {

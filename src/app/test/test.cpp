@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <functional>
+#include <unordered_map>
 
 #include "app/common/svr_comm_trans.h"
 #include "commlib/trans/trans_mgr.h"
@@ -17,7 +18,16 @@ struct TestRedis : public RegisterSvrTrans<TestRedis, kTestRedisCmd, 1>  {
   TestRedis() {}
   void Task(CoYield &co) override {
     Redis().set("test_redis", "It's ok");
-    std::cout << Redis().get("test_redis").value();
+    std::cout << "Redis().get:"<<Redis().get("test_redis").value() <<"\n";
+    std::cout<< "Redis().incr:" << Redis().incr("incr") <<"\n";
+    std::cout<< "Redis().incr:" << Redis().incr("incr") <<"\n";
+    std::cout<< "Redis().zadd:" << Redis().zadd("rank", "liuping", 199) <<"\n";
+    std::cout<< "Redis().zadd:" << Redis().zadd("rank", "lisi", 100) <<"\n";
+    std::unordered_map<std::string, double> with_score;
+    Redis().zrange("rank",0,-1, std::inserter(with_score, with_score.end()));
+    for (auto &item : with_score) {
+      std::cout << item.first << " " << item.second <<"\n";
+    }
   }
 };
 

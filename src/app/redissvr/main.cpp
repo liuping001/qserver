@@ -18,22 +18,27 @@ Redis::RedisClient *redis_client;
 struct TransRedisCmd : public RegisterSvrTrans<TransRedisCmd, proto::cmd::RedisSvrCmd::kREDIS_CMD_REQ, 10000> {
   TransRedisCmd() {}
   void Task(CoYield &co) override {
-    MsgHead * msg = static_cast<MsgHead *>(co.GetMsg());
+    auto msg_head = GetMsg();
     proto::redis::RedisCmdReq req;
     proto::redis::RedisCmdRsp rsp;
-    req.ParseFromArray(msg->Data(), msg->Size());
+    req.ParseFromString(msg_head.msg());
     try {
+      redisReply *reply = nullptr;
       Redis::RedisCmd cmd(*redis_client, co);
-      std::vector<std::string> cmd_list;
-      for (int i = 0; i < req.cmd_argv_size(); i++) {
-        cmd_list.push_back(std::move(*req.mutable_cmd_argv(i)));
+      if (!req.formatted_cmd().empty()) {
+        reply = cmd.FormattedCmd(req.formatted_cmd());
+      } else {
+        std::vector<std::string> cmd_list;
+        for (int i = 0; i < req.cmd_argv_size(); i++) {
+          cmd_list.push_back(std::move(*req.mutable_cmd_argv(i)));
+        }
+        reply = cmd.Cmd(cmd_list);
       }
-      auto reply = cmd.Cmd(cmd_list);
       ReplyToPb(reply, *rsp.mutable_reply());
     } catch (const std::exception &e) {
       std::cout << "redis cmd error: " << e.what();
     }
-    SendMsg(msg->msg_head_, rsp);
+    SendMsg(msg_head, rsp);
   }
 
   static void ReplyToPb(redisReply *reply, proto::redis::redisReply &pb_reply) {

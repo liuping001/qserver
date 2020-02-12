@@ -18,7 +18,7 @@ void ConnectCallback(const redisAsyncContext *c, int status) {
     printf("Error: %s\n", c->errstr);
     return;
   }
-  printf("Connected...\n");
+  printf("redis Connected...\n");
 }
 
 void DisconnectCallback(const redisAsyncContext *c, int status) {
@@ -26,7 +26,7 @@ void DisconnectCallback(const redisAsyncContext *c, int status) {
     printf("Error: %s\n", c->errstr);
     return;
   }
-  printf("Disconnected...\n");
+  printf("redis Disconnected...\n");
 }
 
 int RedisClient::Init(std::string ip, int port) {
@@ -73,7 +73,7 @@ redisReply *RedisCmd::Yield() {
 }
 
 
-redisReply *RedisCmd::Cmd(const std::string &cmd) {
+redisReply *RedisCmd::FormattedCmd(const std::string &cmd) {
   auto ret = redisAsyncFormattedCommand(context_, GetCallback, (void *)&yield_, cmd.data(), cmd.size());
   if (ret != 0) {
     return {};

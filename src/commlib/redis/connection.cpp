@@ -12,11 +12,11 @@ namespace sw {
 namespace redis {
 
 void Connection::send(int argc, const char **argv, const std::size_t *argv_len) {
-  redisAppendCommandArgv(argc, argv, argv_len);
+  redisCommandArgv(argc, argv, argv_len);
 }
 
 void Connection::send(CmdArgs &args) {
-  redisAppendCommandArgv(args.size(), args.argv(), args.argv_len());
+  redisCommandArgv(args.size(), args.argv(), args.argv_len());
 }
 
 uint32_t countDigits(uint64_t v) {

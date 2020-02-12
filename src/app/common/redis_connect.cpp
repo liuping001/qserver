@@ -21,15 +21,23 @@ ReplyUPtr RedisConnect::recv() {
   return ret;
 }
 
-void RedisConnect::redisAppendCommandArgv(int argc, const char **argv, const size_t *argvlen) {
+void RedisConnect::redisCommandArgv(int argc, const char **argv, const size_t *argvlen) {
   proto::redis::RedisCmdReq req;
   for (int i = 0; i < argc; i++) {
     req.add_cmd_argv(argv[i], argvlen[i]);
   }
-  auto rsp = _trans.SendMsgRpcByType<proto::redis::RedisCmdRsp>(1, proto::cmd::kREDIS_CMD_REQ, req, 1);
+  auto rsp = _trans.SendMsgRpcByType<proto::redis::RedisCmdRsp>(1, proto::cmd::kREDIS_CMD_REQ, req, 0);
+  std::cout << "redis rsp:"<<rsp.ShortDebugString() <<"\n";
   _reply = ConvertReply::PbToReply(rsp.reply());
 }
 
+void RedisConnect::redisCommandFormatted(std::string &&cmd) {
+  proto::redis::RedisCmdReq req;
+  req.set_formatted_cmd(std::move(cmd));
+  auto rsp = _trans.SendMsgRpcByType<proto::redis::RedisCmdRsp>(1, proto::cmd::kREDIS_CMD_REQ, req, 0);
+  std::cout << "redis rsp:"<<rsp.ShortDebugString() <<"\n";
+  _reply = ConvertReply::PbToReply(rsp.reply());
+}
 }
 
 }

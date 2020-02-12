@@ -17,4 +17,4 @@ add_library(proto
         ${COM_PB_SRCS}
         )
 
-target_link_libraries(proto protobuf)
+target_link_libraries(proto libprotobuf.a)

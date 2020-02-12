@@ -11,31 +11,33 @@
 template <class Config>
 class AppBase {
  public:
+
   Config config;
 
   int Init(const std::string &config_path) {
     auto root = cpptoml::parse_file(config_path);
     config.FromToml(root);
-
-    // access to the event loop
     evbase = event_base_new();
-    // handler for libevent
-    AMQP::LibEventHandler handler(evbase);
-    // make a connection
-    AMQP::TcpConnection connection(&handler, AMQP::Address(config.mq_addr));
-
-    RabbitMQNet mq_net(connection, config.router, config.self_id, config.self_id);
-    mq_net.SetRecvMsgHandler([](const std::string &msg) {
+    handler = new AMQP::LibEventHandler(evbase);
+    connection = new AMQP::TcpConnection(handler,AMQP::Address(config.mq_addr));
+    mq_net = new RabbitMQNet(*connection, config.router, config.self_id, config.self_id);
+    mq_net->SetRecvMsgHandler([](const std::string &msg) {
       MsgHead msg_head;
       msg_head.msg_head_.ParseFromString(msg);
       std::cout << "MsgHead:" << msg_head.msg_head_.ShortDebugString() << "\n";
       TransMgr::get().OnMsg(msg_head);
     });
-    SvrCommTrans::Init(&mq_net);
+    SvrCommTrans::Init(mq_net);
 
     AddTimer(1, []() {
       TransMgr::get().TickTimeOutCo();
     }, true);
+
+    AddTimer(30 * 1000, [this](){
+      if(this->connection->usable()) {
+        this->connection->heartbeat();
+      }
+    },true);
   }
 
   void AddTimer(uint32_t ms, std::function<void ()> cb, bool repeat = false) {
@@ -51,5 +53,8 @@ class AppBase {
     return *evbase;
   }
  private:
-  struct event_base * evbase;
+  struct event_base *evbase;
+  RabbitMQNet *mq_net;
+  AMQP::LibEventHandler *handler;
+  AMQP::TcpConnection *connection;
 };

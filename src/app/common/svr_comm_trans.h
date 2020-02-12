@@ -38,13 +38,16 @@ class SvrCommTrans : public Trans {
   virtual void Task(CoYield &co) = 0;
   sw::redis::Redis& Redis();
 
+  proto::Msg::MsgHead GetMsg() {
+    return std::move(static_cast<MsgHead *>(_co->GetMsg())->msg_head_); // 使用右值移动栈上面的变量
+  }
  private:
   sw::redis::Redis *_redis_handler;
   CoYield *_co;
+
  private:
   int SendMsgThenYield(const std::string & src_svr_id, const std::string & dst_svr_id, uint32_t cmd,
                        const google::protobuf::Message &msg, uint32_t dst_co_id);
-
 };
 
 template <class Rsp>
@@ -74,7 +77,7 @@ Rsp SvrCommTrans::SendMsgRpc(const proto::Msg::MsgHead &src_msg, const google::p
 
 template <class Rsp>
 Rsp SvrCommTrans::SendMsgRpcByType(uint32_t type, uint32_t cmd, const google::protobuf::Message &msg, uint32_t dst_co_id) {
-  SendMsgRpc<Rsp>(std::to_string(type) + ".1", cmd, msg, dst_co_id);
+  return SendMsgRpc<Rsp>(std::to_string(type) + ".1", cmd, msg, dst_co_id);
 }
 
 

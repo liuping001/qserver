@@ -4,4 +4,4 @@ self_id="1.1"
 
 [redis]
 ip="{{redis_ip}}"
-port="{{redis_port}}"
+port={{redis_port}}

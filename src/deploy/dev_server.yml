@@ -16,11 +16,13 @@ deploy_info:
     template:
       - src: ../app/redissvr/redissvr.toml
         dest: /data/redissvr/redissvr.toml
+    supervisor_conf: /etc/supervisord.conf
 
   test:
-    push:
+    copy_file:
       - src: ../build/app/test/test
         dest: /data/test/test
     template:
       - src: ../app/test/test.toml
         dest: /data/test/test.toml
+    supervisor_conf: /etc/supervisord.conf

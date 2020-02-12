@@ -18,7 +18,6 @@ RabbitMQNet::RabbitMQNet(AMQP::TcpConnection &connection, std::string exchange, 
     queue_(queue),
     key_(key) {
   self_id_ = key;
-
   channel_consume_.declareExchange(exchange_, AMQP::ExchangeType::direct).onSuccess([](){
     std::cout << "declare exchange success" << std::endl;
   });

@@ -20,8 +20,9 @@ class RedisConnect : public Connection {
 
   ReplyUPtr recv() final;
 
-  void redisAppendCommandArgv(int argc, const char **argv, const size_t *argvlen) final ;
+  void redisCommandArgv(int argc, const char **argv, const size_t *argvlen) final ;
 
+  void redisCommandFormatted(std::string &&cmd);
 };
 
 } // end namespace redis

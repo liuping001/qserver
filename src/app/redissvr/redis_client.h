@@ -55,7 +55,7 @@ class RedisCmd {
   RedisCmd(RedisClient &client, CoYield &yield)
       : context_(client.Context()),
         yield_(yield) {}
-  redisReply *Cmd(const std::string &cmd);
+  redisReply *FormattedCmd(const std::string &cmd);
   redisReply *Cmd(const std::vector<std::string> &cmd);
 };
 

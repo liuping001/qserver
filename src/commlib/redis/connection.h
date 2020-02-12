@@ -20,8 +20,8 @@ class Connection {
 
   virtual ReplyUPtr recv() { return nullptr; }
 
-  virtual void redisAppendCommandArgv(int argc, const char **argv, const size_t *argvlen) {}
-
+  virtual void redisCommandArgv(int argc, const char **argv, const size_t *argvlen) {}
+  virtual void redisCommandFormatted(std::string &&cmd) {}
   template<typename ...Args>
   void send(const char *format, Args &&...args);
 
@@ -53,11 +53,7 @@ inline void Connection::send(const char *format, Args &&...args) {
   if (cmd.empty()) {
     return;
   }
-  std::vector<const char *> argv;
-  std::vector<size_t> argvlen;
-  argv.push_back(cmd.data());
-  argvlen.push_back(cmd.size());
-  redisAppendCommandArgv(1, argv.data(), argvlen.data());
+  redisCommandFormatted(std::move(cmd));
 }
 
 }
