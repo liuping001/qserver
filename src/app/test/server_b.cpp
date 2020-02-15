@@ -22,7 +22,7 @@ struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1000>  {
 
 AppBase<server_b_toml::Root> app;
 int main() {
-  app.Init("server_b.toml");
+  app.Init("server_b", "server_b.toml");
 
   auto task = [&]() {
     app.AddTimer( 1, [](){

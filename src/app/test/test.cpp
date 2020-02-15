@@ -33,7 +33,7 @@ struct TestRedis : public RegisterSvrTrans<TestRedis, kTestRedisCmd, 1>  {
 
 AppBase<test_toml::Root> app;
 int main() {
-  app.Init("test.toml");
+  app.Init("test", "test.toml");
 
   auto task = [&]() {
     app.AddTimer( 1, [](){

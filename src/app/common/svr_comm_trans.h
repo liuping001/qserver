@@ -19,14 +19,16 @@ struct MsgHead : public TransMsg {
 
 class SvrCommTrans : public Trans {
  public:
+  // SendMsg 不需要回复
   void SendMsg(const std::string & dst_svr_id, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
   void SendMsg(const proto::Msg::MsgHead &src_msg, const google::protobuf::Message & msg);
-  void SendMsgBySvrTye(uint32_t type, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
+  void SendMsgBySvrType(const std::string &type, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
 
+  // Rpc
   template <class Rsp>
   Rsp SendMsgRpc(const std::string & dst_svr_id, uint32_t cmd, const google::protobuf::Message &msg, uint32_t dst_co_id = 0);
   template <class Rsp>
-  Rsp SendMsgRpcByType(uint32_t type, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
+  Rsp SendMsgRpcByType(const std::string &type, uint32_t cmd, const google::protobuf::Message & msg, uint32_t dst_co_id = 0);
   template <class Rsp>
   Rsp SendMsgRpc(const proto::Msg::MsgHead &src_msg, const google::protobuf::Message & msg);
 
@@ -48,6 +50,7 @@ class SvrCommTrans : public Trans {
  private:
   int SendMsgThenYield(const std::string & src_svr_id, const std::string & dst_svr_id, uint32_t cmd,
                        const google::protobuf::Message &msg, uint32_t dst_co_id);
+  std::string GetOneSvrByType(const std::string &type);
 };
 
 template <class Rsp>
@@ -76,8 +79,8 @@ Rsp SvrCommTrans::SendMsgRpc(const proto::Msg::MsgHead &src_msg, const google::p
 }
 
 template <class Rsp>
-Rsp SvrCommTrans::SendMsgRpcByType(uint32_t type, uint32_t cmd, const google::protobuf::Message &msg, uint32_t dst_co_id) {
-  return SendMsgRpc<Rsp>(std::to_string(type) + ".1", cmd, msg, dst_co_id);
+Rsp SvrCommTrans::SendMsgRpcByType(const std::string &type, uint32_t cmd, const google::protobuf::Message &msg, uint32_t dst_co_id) {
+  return SendMsgRpc<Rsp>(GetOneSvrByType(type), cmd, msg, dst_co_id);
 }
 
 

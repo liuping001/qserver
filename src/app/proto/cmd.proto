@@ -2,6 +2,12 @@ syntax = "proto3";
 
 package proto.cmd;
 
+enum CommonCmd {
+    kCOMMON_CMD_NONE = 0;
+    kSVR_REPORT_REQ = 0x1000;
+    kSVR_REPORT_RSP = 0x1001;
+}
+
 enum RedisSvrCmd {
     kREDIS_CMD_NONE = 0;
     kREDIS_CMD_REQ = 0x10001;

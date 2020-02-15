@@ -18,7 +18,7 @@ namespace logger_mgr {
 constexpr char sink_log[] = "common_log";
 constexpr char sink_data[] = "data_log";
 
-constexpr char default_fmt[] = "[%Y-%m-%d %H:%M:%S %f] [%^%l%$] [thread %t] [%s:%#] %v";
+constexpr char default_fmt[] = "[%Y-%m-%d %H:%M:%S %f] [%^%l%$] [%s:%#](%!) %v";
 constexpr uint32_t default_rotating_size = 1024*1024*1000;
 constexpr char unknown_name[] = "unknown";
 

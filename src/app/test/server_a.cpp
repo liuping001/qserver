@@ -26,6 +26,6 @@ struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1> {
 
 AppBase<server_a_toml::Root> app;
 int main() {
-  app.Init("server_b.toml");
+  app.Init("server_a", "server_b.toml");
   app.Run();
 }

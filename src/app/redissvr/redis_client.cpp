@@ -3,6 +3,7 @@
 //
 
 #include "redis_client.h"
+#include "commlib/logging.h"
 
 namespace Redis {
 
@@ -15,24 +16,24 @@ void GetCallback(redisAsyncContext *c, void *r, void *privdata) {
 
 void ConnectCallback(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
-    printf("Error: %s\n", c->errstr);
+    ERROR("Error: {}", c->errstr);
     return;
   }
-  printf("redis Connected...\n");
+  DEBUG("redis Connected...");
 }
 
 void DisconnectCallback(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
-    printf("Error: %s\n", c->errstr);
+    ERROR("Error: {}", c->errstr);
     return;
   }
-  printf("redis Disconnected...\n");
+  DEBUG("redis Disconnected...");
 }
 
 int RedisClient::Init(std::string ip, int port) {
   context_ = redisAsyncConnect(ip.c_str(), port);
   if (context_->err) {
-    printf("Error: %s\n", context_->errstr);
+    ERROR("Error: {}", context_->errstr);
     return -1;
   }
   auto ret = redisLibeventAttach(context_, &base_);

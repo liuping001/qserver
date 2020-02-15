@@ -33,7 +33,7 @@ void InitInner(const Config &config, bool async = false) {
     log->set_level(config.level);
     spdlog::register_logger(log);
   }
-
+  spdlog::flush_every(std::chrono::seconds(10));
   if (config.data_path.empty()) {
     return;
   }

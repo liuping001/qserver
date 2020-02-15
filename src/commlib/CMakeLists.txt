@@ -6,7 +6,9 @@ set(SOURCE_FILES
         )
 
 add_library(commlib ${SOURCE_FILES})
-
+target_link_libraries(commlib
+        pthread
+        )
 add_library(co
         co/co_task.cpp
         co/coroutine.cpp

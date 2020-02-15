@@ -11,6 +11,7 @@
 #include "redissvr_toml.hpp"
 #include "redis_client.h"
 
+#include "commlib/logging.h"
 
 AppBase<redissvr_toml::Root> app;
 Redis::RedisClient *redis_client;
@@ -36,7 +37,7 @@ struct TransRedisCmd : public RegisterSvrTrans<TransRedisCmd, proto::cmd::RedisS
       }
       ReplyToPb(reply, *rsp.mutable_reply());
     } catch (const std::exception &e) {
-      std::cout << "redis cmd error: " << e.what();
+      ERROR("redis cmd error:{}", e.what());
     }
     SendMsg(msg_head, rsp);
   }
@@ -55,7 +56,7 @@ struct TransRedisCmd : public RegisterSvrTrans<TransRedisCmd, proto::cmd::RedisS
 };
 
 int main() {
-  app.Init("redissvr.toml");
+  app.Init(kRedissvr, "redissvr.toml");
   redis_client = new Redis::RedisClient(app.EvBase());
   redis_client->Init(app.config.redis.ip, app.config.redis.port);
   app.Run();

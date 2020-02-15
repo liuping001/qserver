@@ -3,6 +3,7 @@ add_library(common
         mq_net.cpp
         svr_comm_trans.cpp
         redis_connect.cpp
+        svr_list.cpp
         )
 
 target_link_libraries(common

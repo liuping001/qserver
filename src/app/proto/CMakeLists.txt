@@ -7,6 +7,7 @@ set(hello_proto
         say_hello.proto
         redis_cmd.proto
         cmd.proto
+        common.proto
         )
 
 PROTOBUF_GENERATE_CPP(hello_SRCS hello_HDRS ${hello_proto})
