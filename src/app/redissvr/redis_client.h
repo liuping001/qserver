@@ -9,6 +9,10 @@
 #include <string.h>
 #include <signal.h>
 #include <memory>
+#include <string>
+#include <vector>
+#include <exception>
+#include <sstream>
 
 #include "commlib/co/co_task.h"
 #include "commlib/type_help.hpp"
@@ -17,11 +21,9 @@
 #include "third/hiredis-vip/async.h"
 #include "third/hiredis-vip/adapters/libevent.h"
 
-#include <string>
-#include <vector>
-#include <exception>
-#include <sstream>
+
 #include "commlib/optional.h"
+#include "commlib/client_base.h"
 
 namespace Redis {
 
@@ -35,16 +37,20 @@ inline bool is_integer(redisReply * reply) { return reply->type == REDIS_REPLY_I
 inline bool is_status(redisReply * reply) { return reply->type == REDIS_REPLY_STATUS; }
 inline bool is_nil(redisReply * reply) { return reply->type == REDIS_REPLY_NIL; }
 
-class RedisClient {
+class RedisClient : public ClientBase {
   struct event_base &base_;
   redisAsyncContext *context_ = nullptr;
+  std::string ip_;
+  int port_ = 0;
  public:
   RedisClient(struct event_base &base) : base_(base){}
   redisAsyncContext *Context() { return context_; }
   int Init(std::string ip, int port);
+  void Reconnect() final;
 };
 
 class RedisCmd {
+  ClientBase &client_;
   redisAsyncContext *context_;
   CoYield &yield_;
 
@@ -53,7 +59,8 @@ class RedisCmd {
  public:
 
   RedisCmd(RedisClient &client, CoYield &yield)
-      : context_(client.Context()),
+      : client_(client),
+        context_(client.Context()),
         yield_(yield) {}
   redisReply *FormattedCmd(const std::string &cmd);
   redisReply *Cmd(const std::vector<std::string> &cmd);

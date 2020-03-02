@@ -102,6 +102,7 @@ class AppBase {
     config.data_path = "log";
     config.level = spdlog::level::trace;
     logger_mgr::InitAsync(config);
+    spdlog::flush_on(spdlog::level::debug);
   }
 
   std::string MakeSelfId() {

@@ -17,34 +17,55 @@ void GetCallback(redisAsyncContext *c, void *r, void *privdata) {
 void ConnectCallback(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
     ERROR("Error: {}", c->errstr);
+    static_cast<ClientBase*>(c->data)->SetDisConnected();
     return;
   }
+  static_cast<ClientBase*>(c->data)->SetConnected();
   DEBUG("redis Connected...");
 }
 
 void DisconnectCallback(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
     ERROR("Error: {}", c->errstr);
+    static_cast<ClientBase*>(c->data)->SetDisConnected();
     return;
   }
+  static_cast<ClientBase*>(c->data)->SetDisConnected();
   DEBUG("redis Disconnected...");
 }
 
 int RedisClient::Init(std::string ip, int port) {
-  context_ = redisAsyncConnect(ip.c_str(), port);
+ ip_ = std::move(ip);
+ port_ = port;
+ Reconnect();
+ return 0;
+}
+
+void RedisClient::Reconnect() {
+  if (State() == kConnected || State() == kConnecting || State() == kDisConnecting) {
+    return ;
+  }
+
+  context_ = redisAsyncConnect(ip_.c_str(), port_);
+  if (context_ == nullptr) {
+    ERROR("context null");
+    return;
+  }
   if (context_->err) {
     ERROR("Error: {}", context_->errstr);
-    return -1;
+    redisAsyncFree(context_);
+    return;
   }
+  SetConnecting();
+  context_->data = this;
   auto ret = redisLibeventAttach(context_, &base_);
-  if (ret != REDIS_OK) { return ret; }
+//  if (ret != REDIS_OK) { return ret; }
 
   ret = redisAsyncSetConnectCallback(context_, ConnectCallback);
-  if (ret != REDIS_OK) { return ret; }
+//  if (ret != REDIS_OK) { return ret; }
 
   ret = redisAsyncSetDisconnectCallback(context_, DisconnectCallback);
-  if (ret != REDIS_OK) { return ret; }
-  return 0;
+//  if (ret != REDIS_OK) { return ret; }
 }
 
 class RedisEx : public std::exception {
@@ -63,6 +84,7 @@ redisReply *RedisCmd::Yield() {
   }
   auto msg = yield_.GetMsg();
   if (msg == nullptr) {
+    ERROR("redis reply null. maybe need reconnect");
     throw std::logic_error("reply null");
   }
 
@@ -75,6 +97,10 @@ redisReply *RedisCmd::Yield() {
 
 
 redisReply *RedisCmd::FormattedCmd(const std::string &cmd) {
+  if (client_.State() != ClientBase::kConnected) {
+    WARNING("redis not connected");
+    return {};
+  }
   auto ret = redisAsyncFormattedCommand(context_, GetCallback, (void *)&yield_, cmd.data(), cmd.size());
   if (ret != 0) {
     return {};
@@ -87,6 +113,10 @@ redisReply *RedisCmd::FormattedCmd(const std::string &cmd) {
 }
 
 redisReply * RedisCmd::Cmd(const std::vector<std::string> & cmd_list) {
+  if (client_.State() != ClientBase::kConnected) {
+    WARNING("redis not connected");
+    return {};
+  }
   std::vector<size_t> argc;
   std::vector<const char *> argv;
   for (auto & item : cmd_list) {
