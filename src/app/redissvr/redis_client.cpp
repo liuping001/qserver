@@ -42,7 +42,7 @@ int RedisClient::Init(std::string ip, int port) {
 }
 
 void RedisClient::Reconnect() {
-  if (State() == kConnected || State() == kConnecting || State() == kDisConnecting) {
+  if (NotNeedReconnect()) {
     return ;
   }
 

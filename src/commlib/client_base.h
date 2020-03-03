@@ -19,6 +19,7 @@ class ClientBase {
   void SetConnecting() { state_ = kConnecting; }
   void SetDisConnected() { state_ = kDisConnected; }
   void SetDisConnecting() { state_ = kDisConnecting; }
+  bool NotNeedReconnect() { return !(State() == kConnected || State() == kConnecting || State() == kDisConnecting); }
   ClientState State() { return state_; }
  private:
   ClientState state_;

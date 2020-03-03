@@ -9,14 +9,14 @@ deploy_info:
 
 
   redissvr:
+    template:
+      - src: ../app/redissvr/redissvr.toml
+        dest: /data/redissvr/redissvr.toml
     copy_file:
       - src: ../build/app/redissvr/redissvr
         dest: /data/redissvr/redissvr
     init_cmd:
       - "mkdir -p /data/redissvr"
-    template:
-      - src: ../app/redissvr/redissvr.toml
-        dest: /data/redissvr/redissvr.toml
     supervisor_conf: /etc/supervisord.conf
 
   discovery:

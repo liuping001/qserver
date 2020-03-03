@@ -8,10 +8,10 @@ add_executable(server_b
         )
 target_link_libraries(server_b common event)
 
-add_executable(test
+add_executable(test_svr
         test.cpp
         )
-target_link_libraries(test
+target_link_libraries(test_svr
         common
         event
         pthread

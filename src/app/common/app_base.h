@@ -34,10 +34,7 @@ class AppBase {
     }
 
     evbase = event_base_new();
-    handler = new AMQP::LibEventHandler(evbase);
-    connection = new AMQP::TcpConnection(handler,AMQP::Address(config.mq_addr));
-//    mq_net = new RabbitMQNet(*connection, config.router, config.self_id, config.self_id);
-    mq_net = new RabbitMQNet(*connection, config.router, self_id, self_id);
+    mq_net = new RabbitMQNet(evbase, config.mq_addr, config.router, self_id, self_id);
     mq_net->SetRecvMsgHandler([](const std::string &msg) {
       MsgHead msg_head;
       msg_head.msg_head_.ParseFromString(msg);
@@ -49,11 +46,11 @@ class AppBase {
       mq_net->OnSendChannelSuccess([this]() {
         DEBUG("on send channel success");
         this->ReportSelf(true);
-        this->AddTimer(10 * 1000, [this]() {
-          this->ReportSelf();
-        }, true);
       });
+      AddTimer(10 * 1000, [this]() { this->ReportSelf();}, true);
     }
+    AddTimer(2 * 1000, std::bind(&RabbitMQNet::Reconnect, mq_net), true);
+    AddTimer(30 * 1000, std::bind(&RabbitMQNet::Heartbeat, mq_net), true);
 
     SvrCommTrans::Init(mq_net);
 
@@ -61,11 +58,7 @@ class AppBase {
       TransMgr::get().TickTimeOutCo();
     }, true);
 
-    AddTimer(30 * 1000, [this](){
-      if(this->connection->usable()) {
-        this->connection->heartbeat();
-      }
-    },true);
+    return 0;
   }
 
   void AddTimer(uint32_t ms, std::function<void ()> cb, bool repeat = false) {
@@ -92,8 +85,6 @@ class AppBase {
  private:
   struct event_base *evbase;
   RabbitMQNet *mq_net;
-  AMQP::LibEventHandler *handler;
-  AMQP::TcpConnection *connection;
 
  private:
   void InitLog() {
