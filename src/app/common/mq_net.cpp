@@ -19,6 +19,10 @@ class MyHandler : public AMQP::LibEventHandler {
     INFO("aqpb close");
     cbase_->SetDisConnected();
   }
+  void onError(AMQP::TcpConnection *connection, const char *message) final {
+    INFO("error: {}", message);
+    cbase_->SetDisConnected();
+  }
 };
 
 void RabbitMQNet::SendMsg(proto::Msg::MsgHead &msg) {

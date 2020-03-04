@@ -17,6 +17,7 @@ deploy_info:
         dest: /data/redissvr/redissvr
     init_cmd:
       - "mkdir -p /data/redissvr"
+      - "mkdir -p /data/redissvr/log"
     supervisor_conf: /etc/supervisord.conf
 
   discovery:
@@ -25,6 +26,7 @@ deploy_info:
         dest: /data/discovery/discovery
     init_cmd:
       - "mkdir -p /data/discovery"
+      - "mkdir -p /data/discovery/log"
     template:
       - src: ../app/discovery/discovery.toml
         dest: /data/discovery/discovery.toml
@@ -32,10 +34,11 @@ deploy_info:
 
   test:
     copy_file:
-      - src: ../build/app/test/test
+      - src: ../build/app/test/test_svr
         dest: /data/test/test
     init_cmd:
       - "mkdir -p /data/test"
+      - "mkdir -p /data/test/log"
     template:
       - src: ../app/test/test.toml
         dest: /data/test/test.toml
