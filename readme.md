@@ -1,10 +1,17 @@
-todo list:
-协程
-mq 内部通讯包
-网络
-多线程日志
-dbsvr
-mysqlsvr
-connsvr
-globalsvr
-mainsvr
+# 服务架构介绍
+
+## 特点
+
+* 通过mq来解决服务器之间的通讯问题
+* 独立出redis、mysql 代理服务
+* 使用协程等待消息。包括mq、redis、mysql等网络消息等待，都是基于异步回调的协程。底层回调发生后唤醒对应等待的协程。
+* 服务唯一标识自动生成。组成部分为 type_ip_pid。
+* 服务发现。服务器启动完成后自动向服务发现服务器注册自己，并定期发送心跳
+
+## todo
+
+##### 对外的接口服务
+
+* 接入httpsvr处理http请求
+* 接入grpc提供rpc服务
+* 接入mysql
