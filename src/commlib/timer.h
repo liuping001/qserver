@@ -7,18 +7,23 @@
 #include <set>
 #include <functional>
 #include <vector>
+#include <memory>
 
 class Timer {
  public:
   using TimeOutTask = std::function<void()>;
   struct TimeInfo {
+    TimeInfo(TimeOutTask t) : task(std::move(t)){}
     TimeOutTask task;
   };
-  using TimerId = std::pair<int64_t, TimeInfo *>;
+  using TimerId = std::pair<int64_t, std::shared_ptr<TimeInfo>>;
+
+  ~Timer() {
+    Clear();
+  }
   TimerId AddTimer(int64_t ms, TimeOutTask &&task) {
-    TimerId ret(ms, new TimeInfo({std::move(task)}));
-    timer_set_.insert(ret);
-    return ret;
+    auto ret = timer_set_.emplace(ms, std::make_shared<TimeInfo>(std::move(task)));
+    return *ret.first;
   }
   void CancelTimer(const TimerId &timer_id) {
     timer_set_.erase(timer_id);
@@ -28,16 +33,19 @@ class Timer {
     if (end == timer_set_.begin()) {
       return;
     }
-    std::vector<std::pair<int64_t, TimeInfo *>> time_out_set(timer_set_.begin(), end);
+    std::vector<TimerId > time_out_set(timer_set_.begin(), end);
     timer_set_.erase(timer_set_.begin(), end);
     for (auto &item : time_out_set) {
       item.second->task();
-      delete item.second;
     }
   }
   size_t TimerSize() {
     return timer_set_.size();
   }
+  void Clear() {
+    timer_set_.clear();
+  }
  private:
-  std::set<std::pair<int64_t, TimeInfo *>> timer_set_;
+  std::set<TimerId> timer_set_;
 };
+
