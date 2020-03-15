@@ -20,7 +20,7 @@ class CoTask {
     return co_id;
   }
   int Yield(uint32_t co_id, time_t time_out_ms) {
-    co_id_timer_id_[co_id] = timer_.AddTimer(time_mgr::now_ms() + time_out_ms,
+    co_id_timer_id_[co_id] = timer_.AddTimer(time_mgr::now_ms(), time_out_ms,
                                                     std::bind(&CoTask::ResumeOne, this, co_id, true));
     return co_pool_.Yield(co_id);
   }

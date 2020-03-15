@@ -8,7 +8,7 @@
 int main() {
   Timer timer;
   for (int i = 0; i < 5; i++) {
-    auto id = timer.AddTimer(time_mgr::now_ms() + i * 1000, [i]() { std::cout << i << "s\n"; });
+    auto id = timer.AddTimer(time_mgr::now_ms(), i * 1000, [i]() { std::cout << i << "s\n"; });
     if (i == 2) {
       timer.CancelTimer(id);
     }
