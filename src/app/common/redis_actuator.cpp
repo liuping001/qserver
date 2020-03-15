@@ -2,7 +2,7 @@
 // Created by liuping on 2020/2/5.
 //
 
-#include "redis_connect.h"
+#include "redis_actuator.h"
 #include "commlib/co/co_task.h"
 #include "svr_comm_trans.h"
 #include "app/proto/cmd.pb.h"
@@ -14,15 +14,15 @@ namespace sw {
 
 namespace redis {
 
-RedisConnect::RedisConnect(SvrCommTrans &trans) : Connection(), _trans(trans) {}
+RedisActuator::RedisActuator(SvrCommTrans &trans) : Connection(), _trans(trans) {}
 
-ReplyUPtr RedisConnect::recv() {
+ReplyUPtr RedisActuator::recv() {
   ReplyUPtr ret((redisReply *)_reply);
   _reply = nullptr;
   return ret;
 }
 
-void RedisConnect::redisCommandArgv(int argc, const char **argv, const size_t *argvlen) {
+void RedisActuator::redisCommandArgv(int argc, const char **argv, const size_t *argvlen) {
   proto::redis::RedisCmdReq req;
   for (int i = 0; i < argc; i++) {
     req.add_cmd_argv(argv[i], argvlen[i]);
@@ -31,7 +31,7 @@ void RedisConnect::redisCommandArgv(int argc, const char **argv, const size_t *a
   _reply = ConvertReply::PbToReply(rsp.reply());
 }
 
-void RedisConnect::redisCommandFormatted(std::string &&cmd) {
+void RedisActuator::redisCommandFormatted(std::string &&cmd) {
   proto::redis::RedisCmdReq req;
   req.set_formatted_cmd(std::move(cmd));
   auto rsp = _trans.SendMsgRpcByType<proto::redis::RedisCmdRsp>(kRedissvr, proto::cmd::kREDIS_CMD_REQ, req, 0);

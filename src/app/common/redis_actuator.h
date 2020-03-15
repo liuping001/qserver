@@ -4,15 +4,16 @@
 
 
 #include "commlib/redis/connection.h"
-
+// redis命令执行器: 发送命令，并等待结果
+// 基于Trans收发消息
 class SvrCommTrans;
 namespace sw {
 
 namespace redis {
 
-class RedisConnect : public Connection {
+class RedisActuator : public Connection {
  public:
-  RedisConnect(SvrCommTrans &trans);
+  RedisActuator(SvrCommTrans &trans);
 
  private:
   SvrCommTrans &_trans;

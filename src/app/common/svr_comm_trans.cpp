@@ -3,7 +3,7 @@
 //
 
 #include "svr_comm_trans.h"
-#include "redis_connect.h"
+#include "redis_actuator.h"
 
 #include "commlib/logging.h"
 #include "svr_list.h"
@@ -14,8 +14,8 @@ void SvrCommTrans::Init(NetHandler *net) {
 }
 
 void SvrCommTrans::DoTask(CoYield &co) {
-  sw::redis::RedisConnect connect(*this);
-  sw::redis::Redis redis(&connect);
+  sw::redis::RedisActuator redis_cmd_actuator(*this);
+  sw::redis::Redis redis(&redis_cmd_actuator);
   _co = &co;
   _redis_handler = &redis;
   try {

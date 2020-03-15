@@ -9,7 +9,7 @@
 #include <vector>
 #include <exception>
 #include <sstream>
-#include "commlib/redis_client.h"
+#include "redis_client.h"
 #include "commlib/assert.hpp"
 
 void Debug(const std::vector<optional<std::string>> &value) {
