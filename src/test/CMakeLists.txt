@@ -23,3 +23,5 @@ add_executable(test_redispp test_redis++.cpp)
 target_link_libraries(test_redispp redis++)
 
 add_executable(get_ip test_get_ip.cpp)
+
+add_executable(consistent_hash test_consistent_hash.cpp)
