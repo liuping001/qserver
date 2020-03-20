@@ -18,14 +18,14 @@ struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1> {
     proto::Test::SayHelloRsp rsp;
     req.ParseFromArray(msg->Data(), msg->Size());
     rsp.set_content("hello : " + req.content());
-    std::cout << "SayHelloReq: " << req.ShortDebugString() << "\n";
-    std::cout << "SayHelloRsp: " << rsp.ShortDebugString() << "\n";
+    DEBUG("SayHelloReq: {}", req.ShortDebugString());
+    DEBUG("SayHelloRsp: {}", rsp.ShortDebugString());
     SendMsg(msg->msg_head_, rsp);
   }
 };
 
 AppBase<server_a_toml::Root> app;
 int main() {
-  app.Init("server_a", "server_b.toml");
+  app.Init("server_a", "server_a.toml");
   app.Run();
 }

@@ -12,6 +12,7 @@
 #include "commlib/time_mgr.h"
 #include "commlib/trans/trans.h"
 #include "commlib/trans/trans_msg.h"
+#include "commlib/logging.h"
 
 class TransMgr : public S<TransMgr> {
  public:
@@ -45,7 +46,7 @@ class TransMgr : public S<TransMgr> {
     if (co_id == 0) { // init
       auto &trans_pool = trans_map_[cmd];
       if (trans_pool.empty()) {
-        std::cout << "trans empty\n";
+        ERROR("trans empty. cmd:{}", cmd);
         return -1;
       }
       auto trans = trans_pool.get_shared();

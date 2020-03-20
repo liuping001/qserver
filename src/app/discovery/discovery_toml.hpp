@@ -5,7 +5,7 @@
 **********************************************************/
 
 #pragma once
-#include "third/cpptoml/cpptoml.h"
+#include "third/toml/cpptoml.h"
 
 
 #ifndef TOML_BASE_STRUCT

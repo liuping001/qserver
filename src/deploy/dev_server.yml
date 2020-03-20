@@ -43,3 +43,27 @@ deploy_info:
       - src: ../app/test/test.toml
         dest: /data/test/test.toml
     supervisor_conf: /etc/supervisord.conf
+
+# 吞吐量测试
+  server_a:
+    copy_file:
+      - src: ../build/app/test/server_a
+        dest: /data/server_a/server_a
+    init_cmd:
+      - "mkdir -p /data/server_a"
+      - "mkdir -p /data/server_a/log"
+    template:
+      - src: ../app/test/server_a.toml
+        dest: /data/server_a/server_a.toml
+    supervisor_conf: /etc/supervisord.conf
+  server_b:
+    copy_file:
+      - src: ../build/app/test/server_b
+        dest: /data/server_b/server_b
+    init_cmd:
+      - "mkdir -p /data/server_b"
+      - "mkdir -p /data/server_b/log"
+    template:
+      - src: ../app/test/server_b.toml
+        dest: /data/server_b/server_b.toml
+    supervisor_conf: /etc/supervisord.conf

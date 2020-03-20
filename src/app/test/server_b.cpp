@@ -16,7 +16,7 @@ struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1000>  {
   void Task(CoYield &co) override {
     proto::Test::SayHelloReq req;
     req.set_content("I am liuping");
-    auto rsp = SendMsgRpc<proto::Test::SayHelloRsp>( "1.1.1.1", 1001, req);
+    auto rsp = SendMsgRpcByType<proto::Test::SayHelloRsp>( "server_a", 1001, req);
   }
 };
 
@@ -26,9 +26,11 @@ int main() {
 
   auto task = [&]() {
     app.AddTimer( 1, [](){
-      MsgHead msg_head;
-      msg_head.msg_head_.set_cmd(1001);
-      TransMgr::get().OnMsg(msg_head);
+      for (int i = 0; i < 1; i++) {
+        MsgHead msg_head;
+        msg_head.msg_head_.set_cmd(1001);
+        TransMgr::get().OnMsg(msg_head);
+      }
     }, true);
   };
   app.AddTimer(2000, task);
