@@ -6,8 +6,13 @@ package proto.Test;
 
 message SayHelloReq {
     string content = 1;
+    uint32 seq = 2;
+    int64 time_req = 3;
 }
 
 message SayHelloRsp {
     string content = 1;
+    uint32 seq = 2;
+    int64 time_req = 3;
+    int64 time_rsp = 4;
 }

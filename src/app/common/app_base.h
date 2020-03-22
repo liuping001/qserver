@@ -91,7 +91,7 @@ class AppBase {
     logger_mgr::ConfigAsync config;
     config.log_path = "log";
     config.data_path = "log";
-    config.level = spdlog::level::trace;
+    config.level = spdlog::level::debug;
     logger_mgr::InitAsync(config);
     spdlog::flush_on(spdlog::level::debug);
   }

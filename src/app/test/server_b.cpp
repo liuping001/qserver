@@ -10,13 +10,22 @@
 #include "app/common/app_base.h"
 #include "app/proto/say_hello.pb.h"
 #include "server_b_toml.hpp"
+#include "commlib/time_mgr.h"
 
+uint32_t seq = 0;
 struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1000>  {
   SayHello() {}
   void Task(CoYield &co) override {
     proto::Test::SayHelloReq req;
     req.set_content("I am liuping");
-    auto rsp = SendMsgRpcByType<proto::Test::SayHelloRsp>( "server_a", 1001, req);
+    req.set_seq(++seq);
+    req.set_time_req(time_mgr::now_ms());
+    try {
+      auto rsp = SendMsgRpcByType<proto::Test::SayHelloRsp>("server_a", 1001, req);
+      DEBUG("rsp: {}", rsp.ShortDebugString());
+    } catch (const std::exception &e) {
+      ERROR("exception:{} req:{}", e.what(), req.ShortDebugString());
+    }
   }
 };
 
@@ -26,7 +35,7 @@ int main() {
 
   auto task = [&]() {
     app.AddTimer( 1, [](){
-      for (int i = 0; i < 1; i++) {
+      for (int i = 0; i < 4; i++) {
         MsgHead msg_head;
         msg_head.msg_head_.set_cmd(1001);
         TransMgr::get().OnMsg(msg_head);

@@ -9,6 +9,7 @@
 #include <iostream>
 #include "app/proto/say_hello.pb.h"
 #include "server_a_toml.hpp"
+#include "commlib/time_mgr.h"
 
 struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1> {
   SayHello() {}
@@ -18,6 +19,9 @@ struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1> {
     proto::Test::SayHelloRsp rsp;
     req.ParseFromArray(msg->Data(), msg->Size());
     rsp.set_content("hello : " + req.content());
+    rsp.set_seq(req.seq());
+    rsp.set_time_req(req.time_req());
+    rsp.set_time_rsp(time_mgr::now_ms());
     DEBUG("SayHelloReq: {}", req.ShortDebugString());
     DEBUG("SayHelloRsp: {}", rsp.ShortDebugString());
     SendMsg(msg->msg_head_, rsp);

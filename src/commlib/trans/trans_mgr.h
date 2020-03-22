@@ -54,7 +54,7 @@ class TransMgr : public S<TransMgr> {
       return co_task_.ResumeOneWithMsg(id, const_cast<TransMsg *>(&msg));
     }
     if (!co_task_.CoIdExist(co_id)) {
-      std::cout << "co id not exist\n";
+      ERROR("co id not exist, cmd:{}, co_id:{}", cmd, co_id);
       return -1;
     }
     return co_task_.ResumeOneWithMsg(co_id, const_cast<TransMsg *>(&msg));

@@ -81,6 +81,9 @@ void RabbitMQNet::Reconnect() {
     if (this->recv_msg_handler_) {
       this->recv_msg_handler_(std::string(message.body(), message.bodySize()));
     }
+    if (this->channel_consume_) {
+      this->channel_consume_->ack(deliveryTag);
+    }
   });
   consumeQ.onSuccess([this](const std::string &consumer){
     auto &send_channel = this->channel_send_->declareExchange(exchange_, AMQP::ExchangeType::direct);

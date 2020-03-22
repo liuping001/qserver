@@ -2,6 +2,10 @@ mq_addr="{{mq_addr}}"
 router="{{router}}"
 self_id="1.1"
 
+[log]
+log_remain_size = 1
+log_level = 1
+
 [redis]
 ip="{{redis_ip}}"
 port={{redis_port}}

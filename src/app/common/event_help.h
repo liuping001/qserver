@@ -16,6 +16,8 @@ struct EventInfo {
     info->cb();
     if (info->repeat) {
       event_add(&info->ev, &info->tv);
+    } else {
+      delete info;
     }
   }
 };

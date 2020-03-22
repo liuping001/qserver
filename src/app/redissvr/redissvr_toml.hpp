@@ -30,6 +30,16 @@ struct TomlBase {
 
 namespace redissvr_toml {
 
+struct Log {
+  int64_t log_level;
+  int64_t log_remain_size;
+
+  void FromToml(std::shared_ptr<cpptoml::base> ptr){
+    log_level = ptr->as_table()->get("log_level")->as<int64_t>()->get();
+    log_remain_size = ptr->as_table()->get("log_remain_size")->as<int64_t>()->get();
+  }
+};
+
 struct Redis {
   int64_t port;
   std::string ip;
@@ -41,12 +51,14 @@ struct Redis {
 };
 
 struct Root {
+  Log log; 
   Redis redis; 
   std::string self_id;
   std::string router;
   std::string mq_addr;
 
   void FromToml(std::shared_ptr<cpptoml::base> ptr){
+    log.FromToml(ptr->as_table()->get("log"));
     redis.FromToml(ptr->as_table()->get("redis"));
     self_id = ptr->as_table()->get("self_id")->as<std::string>()->get();
     router = ptr->as_table()->get("router")->as<std::string>()->get();
