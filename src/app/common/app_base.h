@@ -20,11 +20,11 @@ template <class Config>
 class AppBase {
  public:
 
-  Config config;
+  Config config_;
 
   int Init(const std::string &svr_type, const std::string &config_path) {
     auto root = cpptoml::parse_file(config_path);
-    config.FromToml(root);
+    config_.FromToml(root);
 
     InitLog();
 
@@ -34,7 +34,7 @@ class AppBase {
     }
 
     evbase = event_base_new();
-    mq_net = new RabbitMQNet(evbase, config.mq_addr, config.router, self_id, self_id);
+    mq_net = new RabbitMQNet(evbase, config_.mq_addr, config_.router, self_id, self_id);
     mq_net->SetRecvMsgHandler([](const std::string &msg) {
       MsgHead msg_head;
       msg_head.msg_head_.ParseFromString(msg);
@@ -49,6 +49,7 @@ class AppBase {
       });
       AddTimer(10 * 1000, [this]() { this->ReportSelf();}, true);
     }
+    mq_net->Reconnect();
     AddTimer(2 * 1000, std::bind(&RabbitMQNet::Reconnect, mq_net), true);
     AddTimer(30 * 1000, std::bind(&RabbitMQNet::Heartbeat, mq_net), true);
 
@@ -91,9 +92,11 @@ class AppBase {
     logger_mgr::ConfigAsync config;
     config.log_path = "log";
     config.data_path = "log";
-    config.level = spdlog::level::debug;
+    config.level = spdlog::level::level_enum(config_.log.log_level);
+    config.max_files = config_.log.log_remain_size;
     logger_mgr::InitAsync(config);
     spdlog::flush_on(spdlog::level::debug);
+    INFO("init log finish. level:{}, log_path:{}", config.level, config.log_path);
   }
 
   std::string MakeSelfId() {

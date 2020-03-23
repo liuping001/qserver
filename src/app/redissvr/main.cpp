@@ -62,7 +62,7 @@ struct TransRedisCmd : public RegisterSvrTrans<TransRedisCmd, proto::cmd::RedisS
 int main() {
   app.Init(kRedissvr, "redissvr.toml");
   redis_client = new Redis::RedisClient(app.EvBase());
-  redis_client->Init(app.config.redis.ip, app.config.redis.port);
+  redis_client->Init(app.config_.redis.ip, app.config_.redis.port);
   app.AddTimer(1000, std::bind(&Redis::RedisClient::Reconnect, redis_client), true);
   app.Run();
 }

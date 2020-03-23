@@ -13,7 +13,7 @@
 #include "commlib/time_mgr.h"
 
 uint32_t seq = 0;
-struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1000>  {
+struct SayHello : public RegisterSvrTrans<SayHello, 1001, 10000>  {
   SayHello() {}
   void Task(CoYield &co) override {
     proto::Test::SayHelloReq req;
@@ -35,7 +35,7 @@ int main() {
 
   auto task = [&]() {
     app.AddTimer( 1, [](){
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 2; i++) {
         MsgHead msg_head;
         msg_head.msg_head_.set_cmd(1001);
         TransMgr::get().OnMsg(msg_head);

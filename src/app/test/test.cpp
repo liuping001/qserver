@@ -40,7 +40,7 @@ int main() {
       MsgHead msg_head;
       msg_head.msg_head_.set_cmd(kTestRedisCmd);
       TransMgr::get().OnMsg(msg_head);
-    });
+    }, true);
   };
   app.AddTimer(2000, task);
   // run the loop
