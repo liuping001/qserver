@@ -8,16 +8,24 @@
 class CoYield;
 
 using task_type = std::function<void(CoYield &)>;
-const int MAX_COROUTINE_STACK = 1024 * 128;
+const int MAX_COROUTINE_STACK = 1024 * 1024; // 私有栈大小，malloc出来，没有真正访问内存时，并不会进行内存映射
 
 using CoMsg = void *;
 struct Coroutine {
+  Coroutine() {
+    stack = (char *)malloc(MAX_COROUTINE_STACK);
+  }
+  ~Coroutine() {
+    if (stack) {
+      free(stack);
+    }
+  }
   ucontext_t context;
   uint32_t co_id = 0;
   task_type task;
   CoMsg co_msg;
   bool resume_by_time_out = false;
-  char stack[MAX_COROUTINE_STACK] = {}; // 私有栈
+  char *stack = nullptr; //私有栈
 };
 
 using ActionCo = std::unordered_map<uint32_t, Coroutine *>;

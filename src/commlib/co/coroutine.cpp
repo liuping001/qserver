@@ -1,11 +1,12 @@
 
 #include "commlib/co/coroutine.h"
-
+#include "commlib/logging.h"
 int CoPool::NewCoroutine(func_hander func, task_type task, void *arg) {
   if (free_coroutine.empty()) {
     Coroutine *co = new Coroutine();
     co->co_id = GetCoId();
     free_coroutine.push_back(co);
+    INFO("add co. action co size: {}", action_coroutine.size());
   }
 
   Coroutine *co = free_coroutine.front();
@@ -15,7 +16,7 @@ int CoPool::NewCoroutine(func_hander func, task_type task, void *arg) {
 
   getcontext(&co->context);
   co->context.uc_stack.ss_sp = co->stack;
-  co->context.uc_stack.ss_size = sizeof(co->stack);
+  co->context.uc_stack.ss_size = MAX_COROUTINE_STACK;
   co->context.uc_link = &main;
   co->task = std::move(task);
 
