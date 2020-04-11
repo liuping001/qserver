@@ -1,0 +1,42 @@
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: mkdir
+      file:
+        path: "{{item}}"
+        state: directory
+      with_items:
+        - "{{zk_dest_path}}"
+        - "{{zk_data_path}}"
+      tags:
+        - push  
+    - name: "copy 并 解压 zookeeper"
+      unarchive:
+        src: "{{zk_src_path}}"
+        dest: "{{zk_dest_path}}"
+        copy: yes
+        extra_opts: [--strip-components=1]
+      tags:
+        - push 
+
+    - name: "push conf"
+      template:
+        src: zoo.cfg
+        dest: "{{zk_dest_path}}/conf/"
+        mode: preserve
+      tags:
+        - push 
+    - name: "push myid conf"
+      template:
+        src: myid
+        dest: "{{zk_data_path}}/"
+        mode: preserve
+      tags:
+        - push
+        
+    - name: "start zookeeper"
+      shell:
+        cmd: 'cd {{zk_dest_path}}/bin && sh zkServer.sh start'
+        warn: False    
+      tags:
+        - start 
