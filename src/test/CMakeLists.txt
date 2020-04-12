@@ -25,3 +25,6 @@ target_link_libraries(test_redispp redis++)
 add_executable(get_ip test_get_ip.cpp)
 
 add_executable(consistent_hash test_consistent_hash.cpp)
+
+add_executable(test_zk test_zookeeper.cpp)
+target_link_libraries(test_zk ${CMAKE_SOURCE_DIR}/third/zookeeper/lib/libzookeeper_st.a)
