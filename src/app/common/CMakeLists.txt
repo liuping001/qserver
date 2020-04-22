@@ -4,6 +4,7 @@ add_library(common
         svr_comm_trans.cpp
         redis_actuator.cpp
         svr_list.cpp
+        zookeeper_client.cpp
         )
 
 target_link_libraries(common
@@ -11,4 +12,6 @@ target_link_libraries(common
         commlib
         proto
         event
+        ${CMAKE_SOURCE_DIR}/third/zookeeper/lib/libzookeeper_st.a
+        co
         redis_handler)

@@ -14,7 +14,7 @@
 struct SayHello : public RegisterSvrTrans<SayHello, 1001, 1> {
   SayHello() {}
   void Task(CoYield &co) override {
-    MsgHead * msg = static_cast<MsgHead *>(co.GetMsg());
+    const MsgHead * msg = static_cast<const MsgHead *>(co.GetMsg());
     proto::Test::SayHelloReq req;
     proto::Test::SayHelloRsp rsp;
     req.ParseFromArray(msg->Data(), msg->Size());

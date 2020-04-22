@@ -14,11 +14,13 @@ class ClientBase {
     kConnected,
     kDisConnecting,
     kDisConnected,
+    kExpired,
   };
   void SetConnected() { state_ = kConnected; }
   void SetConnecting() { state_ = kConnecting; }
   void SetDisConnected() { state_ = kDisConnected; }
   void SetDisConnecting() { state_ = kDisConnecting; }
+  void SetExpired() { state_ = kExpired; }
   bool NotNeedReconnect() { return (State() == kConnected || State() == kConnecting || State() == kDisConnecting); }
   ClientState State() { return state_; }
  private:

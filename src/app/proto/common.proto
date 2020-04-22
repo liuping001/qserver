@@ -1,24 +1,3 @@
 syntax = "proto3";
 
 package proto.common;
-
-enum SvrStatus {
-    SVR_OFFLINE = 0;
-    SVR_ONLINE = 1;
-    SVR_JOIN = 2;
-}
-
-// 各个服务上报的发现服务。
-// 发现服务会转发。
-// 发现服务也会定时检测服务心跳
-// kSVR_REPORT_REQ
-message SvrReportNotify {
-    string svr_id = 1;
-    SvrStatus status = 2;
-}
-
-// 如果是服务刚刚join进来。需要回复当前所有的服务列表
-// kSVR_REPORT_RSP
-message SvrReportNotifyRsp {
-    repeated string svr_list = 1;
-}

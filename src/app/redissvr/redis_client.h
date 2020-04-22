@@ -31,11 +31,11 @@ void GetCallback(redisAsyncContext *c, void *r, void *privdata);
 void ConnectCallback(const redisAsyncContext *c, int status);
 void DisconnectCallback(const redisAsyncContext *c, int status);
 
-inline bool is_array(redisReply *reply) { return reply->type == REDIS_REPLY_ARRAY; }
-inline bool is_string(redisReply * reply) { return reply->type == REDIS_REPLY_STRING; }
-inline bool is_integer(redisReply * reply) { return reply->type == REDIS_REPLY_INTEGER; }
-inline bool is_status(redisReply * reply) { return reply->type == REDIS_REPLY_STATUS; }
-inline bool is_nil(redisReply * reply) { return reply->type == REDIS_REPLY_NIL; }
+inline bool is_array(const redisReply *reply) { return reply->type == REDIS_REPLY_ARRAY; }
+inline bool is_string(const redisReply * reply) { return reply->type == REDIS_REPLY_STRING; }
+inline bool is_integer(const redisReply * reply) { return reply->type == REDIS_REPLY_INTEGER; }
+inline bool is_status(const redisReply * reply) { return reply->type == REDIS_REPLY_STATUS; }
+inline bool is_nil(const redisReply * reply) { return reply->type == REDIS_REPLY_NIL; }
 
 class RedisClient : public ClientBase {
   struct event_base &base_;
@@ -54,7 +54,7 @@ class RedisCmd {
   redisAsyncContext *context_;
   CoYield &yield_;
 
-  redisReply *Yield();
+  const redisReply *Yield();
 
  public:
 
@@ -62,8 +62,8 @@ class RedisCmd {
       : client_(client),
         context_(client.Context()),
         yield_(yield) {}
-  redisReply *FormattedCmd(const std::string &cmd);
-  redisReply *Cmd(const std::vector<std::string> &cmd);
+  const redisReply *FormattedCmd(const std::string &cmd);
+  const redisReply *Cmd(const std::vector<std::string> &cmd);
 };
 
 }

@@ -1,12 +1,12 @@
 
 #include "commlib/co/coroutine.h"
-#include "commlib/logging.h"
+// #include "commlib/logging.h"
 int CoPool::NewCoroutine(func_hander func, task_type task, void *arg) {
   if (free_coroutine.empty()) {
     Coroutine *co = new Coroutine();
     co->co_id = GetCoId();
     free_coroutine.push_back(co);
-    INFO("add co. action co size: {}", action_coroutine.size());
+  //  INFO("add co. action co size: {}", action_coroutine.size());
   }
 
   Coroutine *co = free_coroutine.front();

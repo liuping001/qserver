@@ -14,7 +14,7 @@
 #include "test_toml.hpp"
 const int kTestRedisCmd = 10000;
 
-struct TestRedis : public RegisterSvrTrans<TestRedis, kTestRedisCmd, 1>  {
+struct TestRedis : public RegisterSvrTrans<TestRedis, kTestRedisCmd, 10000>  {
   TestRedis() {}
   void Task(CoYield &co) override {
     Redis().set("test_redis", "It's ok");
@@ -36,7 +36,7 @@ int main() {
   app.Init("test", "test.toml");
 
   auto task = [&]() {
-    app.AddTimer( 1, [](){
+    app.AddTimer(2, [](){
       MsgHead msg_head;
       msg_head.msg_head_.set_cmd(kTestRedisCmd);
       TransMgr::get().OnMsg(msg_head);

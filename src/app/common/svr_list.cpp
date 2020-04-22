@@ -9,39 +9,6 @@
 #include "app/proto/common.pb.h"
 #include "commlib/logging.h"
 
-// 处理全量
-struct TransSvrReport : public RegisterSvrTrans<TransSvrReport, proto::cmd::CommonCmd::kSVR_REPORT_RSP> {
-  TransSvrReport() {}
-
-  void Task(CoYield &co) override {
-    auto msg_head = GetMsg();
-    proto::common::SvrReportNotifyRsp rsp;
-    rsp.ParseFromString(msg_head.msg());
-    DEBUG("{} : {}",rsp.GetTypeName(), rsp.ShortDebugString());
-    svr_list::get().Clear();
-    for (auto &item : rsp.svr_list()) {
-     svr_list::get().AddSvr(item);
-    }
-  }
-};
-
-// 处理增量
-struct TransSvrReportReq: public RegisterSvrTrans<TransSvrReportReq, proto::cmd::CommonCmd::kSVR_REPORT_REQ> {
-  TransSvrReportReq() {}
-  void Task(CoYield &co) override {
-    auto msg_head = GetMsg();
-    proto::common::SvrReportNotify notify;
-    notify.ParseFromString(msg_head.msg());
-    DEBUG("{} : {}",notify.GetTypeName(), notify.ShortDebugString());
-    if (notify.status() > 0) {
-      svr_list::get().AddSvr(notify.svr_id());
-    } else {
-      svr_list::get().RemoveSvr(notify.svr_id());
-    }
-  }
-
-};
-
 void SvrList::AddSvr(const std::string &svr_id) {
   if (svr_set.find(svr_id) != svr_set.end()) {
     return;

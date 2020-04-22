@@ -24,7 +24,7 @@ struct TransRedisCmd : public RegisterSvrTrans<TransRedisCmd, proto::cmd::RedisS
     proto::redis::RedisCmdRsp rsp;
     req.ParseFromString(msg_head.msg());
     try {
-      redisReply *reply = nullptr;
+      const redisReply *reply = nullptr;
       Redis::RedisCmd cmd(*redis_client, co);
       if (!req.formatted_cmd().empty()) {
         reply = cmd.FormattedCmd(req.formatted_cmd());
@@ -46,7 +46,7 @@ struct TransRedisCmd : public RegisterSvrTrans<TransRedisCmd, proto::cmd::RedisS
     SendMsg(msg_head, rsp);
   }
 
-  static void ReplyToPb(redisReply *reply, proto::redis::redisReply &pb_reply) {
+  static void ReplyToPb(const redisReply *reply, proto::redis::redisReply &pb_reply) {
     pb_reply.set_type(reply->type);
     pb_reply.set_integer(reply->integer);
     pb_reply.set_str(reply->str, reply->len);

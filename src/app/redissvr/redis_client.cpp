@@ -77,7 +77,7 @@ class RedisEx : public std::exception {
 };
 
 
-redisReply *RedisCmd::Yield() {
+const redisReply *RedisCmd::Yield() {
   auto ret = yield_.Yield();
   if (ret != 0) {
     throw std::logic_error("yield failed");
@@ -88,7 +88,7 @@ redisReply *RedisCmd::Yield() {
     throw std::logic_error("reply null");
   }
 
-  auto redis_reply = static_cast<redisReply *>(msg);
+  auto redis_reply = static_cast<const redisReply *>(msg);
   if (redis_reply->type == REDIS_REPLY_ERROR) {
     throw std::logic_error(std::string(redis_reply->str, redis_reply->len));
   }
@@ -96,7 +96,7 @@ redisReply *RedisCmd::Yield() {
 }
 
 
-redisReply *RedisCmd::FormattedCmd(const std::string &cmd) {
+const redisReply *RedisCmd::FormattedCmd(const std::string &cmd) {
   if (client_.State() != ClientBase::kConnected) {
     WARNING("redis not connected");
     return {};
@@ -112,7 +112,7 @@ redisReply *RedisCmd::FormattedCmd(const std::string &cmd) {
   return reply;
 }
 
-redisReply * RedisCmd::Cmd(const std::vector<std::string> & cmd_list) {
+const redisReply * RedisCmd::Cmd(const std::vector<std::string> & cmd_list) {
   if (client_.State() != ClientBase::kConnected) {
     WARNING("redis not connected");
     return {};

@@ -10,7 +10,7 @@ class CoYield;
 using task_type = std::function<void(CoYield &)>;
 const int MAX_COROUTINE_STACK = 1024 * 1024; // 私有栈大小，malloc出来，没有真正访问内存时，并不会进行内存映射
 
-using CoMsg = void *;
+using CoMsg =const void *;
 struct Coroutine {
   Coroutine() {
     stack = (char *)malloc(MAX_COROUTINE_STACK);

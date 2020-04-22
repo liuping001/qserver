@@ -1,6 +1,0 @@
-mq_addr="{{mq_addr}}"
-router="{{router}}"
-
-[log]
-log_remain_size = 1
-log_level = 1

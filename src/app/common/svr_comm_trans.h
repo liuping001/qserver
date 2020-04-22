@@ -41,7 +41,7 @@ class SvrCommTrans : public Trans {
   sw::redis::Redis& Redis();
 
   proto::Msg::MsgHead GetMsg() {
-    return std::move(static_cast<MsgHead *>(_co->GetMsg())->msg_head_); // 使用右值移动栈上面的变量
+    return std::move(static_cast<MsgHead *>(const_cast<void *>(_co->GetMsg()))->msg_head_); // 使用右值移动栈上面的变量
   }
  private:
   sw::redis::Redis *_redis_handler;
@@ -62,7 +62,7 @@ Rsp SvrCommTrans::SendMsgRpc(const std::string &dst_svr_id,
   if (ret != 0) {
     throw std::runtime_error("time out");
   }
-  MsgHead *ret_msg = static_cast<MsgHead*>((*_co).GetMsg());
+  const MsgHead *ret_msg = static_cast<const MsgHead*>((*_co).GetMsg());
   if (ret_msg == nullptr) {
     throw std::runtime_error("nullptr msg");
   }

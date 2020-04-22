@@ -20,18 +20,6 @@ deploy_info:
       - "mkdir -p /data/redissvr/log"
     supervisor_conf: /etc/supervisord.conf
 
-  discovery:
-    copy_file:
-      - src: ../build/app/discovery/discovery
-        dest: /data/discovery/discovery
-    init_cmd:
-      - "mkdir -p /data/discovery"
-      - "mkdir -p /data/discovery/log"
-    template:
-      - src: ../app/discovery/discovery.toml
-        dest: /data/discovery/discovery.toml
-    supervisor_conf: /etc/supervisord.conf
-
   test:
     copy_file:
       - src: ../build/app/test/test_svr

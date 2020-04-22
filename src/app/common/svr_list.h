@@ -9,6 +9,7 @@
 
 #include "commlib/singleton.h"
 
+
 struct SvrList {
   std::unordered_map<std::string /*type*/, std::vector<std::string> /*svr_list*/> svr_by_type;
   std::unordered_set<std::string> svr_set;
