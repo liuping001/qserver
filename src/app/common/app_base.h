@@ -72,7 +72,7 @@ class AppBase {
 
     // init zk
     zk_client_ = std::make_shared<ZooKeeperClient>();
-    auto zk_init = zk_client_->Init("127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183", 5000);
+    auto zk_init = zk_client_->Init(config_.zk_host, 5000);
     if (!zk_init) {
       return -1;
     }

@@ -1,7 +1,6 @@
 mq_addr="{{mq_addr}}"
 router="{{router}}"
-self_id="2.1"
-
+zk_host="{{zk_host}}"
 [log]
 log_remain_size = 1
 log_level = 1
