@@ -4,6 +4,7 @@
 #include <amqpcpp.h>
 #include <amqpcpp/libevent.h>
 #include <functional>
+#include <string>
 
 #include "app/common/svr_comm_trans.h"
 #include "app/common/mq_net.h"
@@ -143,7 +144,15 @@ class AppBase {
     if (ip_list.empty()) {
       FATAL("IP LIST EMPTY");
     }
-    return ip_list[0] + "-" + std::to_string(getpid());
+    char buf[1024] = {0};
+    getcwd(buf, 1024);
+    std::string cwd(static_cast<char *>(buf));
+    for (auto &c : cwd) {
+      if (c =='/') {
+        c = '|';
+      }
+    }
+    return ip_list[0] + "-" + cwd;
   }
   void Watcher(int type, int state, const char *path) {
       if (type == ZOO_CHILD_EVENT) {
