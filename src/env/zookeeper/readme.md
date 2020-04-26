@@ -11,3 +11,4 @@ cd deploy
 ansible-playbook -i host_replicated.ini zoo.yml --tags="push"
 ansible-playbook -i host_replicated.ini zoo.yml --tags="start"
 ```
+根据自己的需要修改host_standalone.ini、host_replicated.ini中的配置
